@@ -11,9 +11,9 @@ import (
 type CircuitState int
 
 const (
-	StateClosed CircuitState = iota // Normal operations: requests flow through
-	StateHalfOpen                   // Recovery probe: testing upstream health
-	StateOpen                       // Outage tripped: fail fast without network I/O
+	StateClosed   CircuitState = iota // Normal operations: requests flow through
+	StateHalfOpen                     // Recovery probe: testing upstream health
+	StateOpen                         // Outage tripped: fail fast without network I/O
 )
 
 func (s CircuitState) String() string {
