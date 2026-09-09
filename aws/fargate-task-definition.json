@@ -1,0 +1,47 @@
+{
+  "family": "a-bank-wallet-service",
+  "executionRoleArn": "arn:aws:iam::464868388812:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "containerDefinitions": [
+    {
+      "name": "wallet-service",
+      "image": "464868388812.dkr.ecr.us-east-1.amazonaws.com/a-bank-wallet-service:1.0.0",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "name": "PORT",
+          "value": "8080"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/a-bank-wallet-service",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "fargate"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz || exit 1"],
+        "interval": 15,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 5
+      }
+    }
+  ]
+}

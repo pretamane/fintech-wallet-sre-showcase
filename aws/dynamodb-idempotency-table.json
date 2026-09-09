@@ -1,0 +1,26 @@
+{
+  "TableName": "a-bank-wallet-idempotency",
+  "KeySchema": [
+    {
+      "AttributeName": "IdempotencyKey",
+      "KeyType": "HASH"
+    }
+  ],
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "IdempotencyKey",
+      "AttributeType": "S"
+    }
+  ],
+  "BillingMode": "PAY_PER_REQUEST",
+  "Tags": [
+    {
+      "Key": "Project",
+      "Value": "ABankMobileWallet"
+    },
+    {
+      "Key": "Environment",
+      "Value": "ProductionShowcase"
+    }
+  ]
+}

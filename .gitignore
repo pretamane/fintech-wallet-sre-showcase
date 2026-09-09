@@ -1,0 +1,38 @@
+# Binaries and compiled files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/wallet-service
+
+# Test and coverage artifacts
+*.out
+*.test
+coverage.txt
+
+# Environment variables & secrets
+.env
+*.env
+*.pem
+*.key
+*.cert
+credentials
+id_rsa
+*.id_rsa
+
+# IDE and OS artifacts
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Terraform runtime files
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# AWS CLI / Local state
+.aws/
