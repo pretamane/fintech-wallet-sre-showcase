@@ -175,4 +175,3 @@ func TestCircuitBreakerRecovery(t *testing.T) {
 		t.Fatalf("Expected circuit to recover to CLOSED, got %s", cb.State())
 	}
 }
-
