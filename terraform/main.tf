@@ -160,6 +160,14 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "Allow inbound HTTP 8080 from Cloudflare Origin Rule"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     description     = "Allow outbound forward strictly to Fargate microservice instances"
     from_port       = var.container_port
@@ -178,7 +186,7 @@ resource "aws_security_group" "alb_sg" {
 # Fargate Security Group: Zero-Trust Ingress Restricted ONLY to ALB Security Group
 resource "aws_security_group" "fargate_sg" {
   name        = "a-bank-wallet-sg"
-  description = "Security group for A Bank Wallet Service on Fargate (Micro-Segmented)"
+  description = "Security group for A Bank Wallet Service on Fargate"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
@@ -251,6 +259,17 @@ resource "aws_lb_target_group" "wallet_tg" {
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.wallet_alb.arn
   port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.wallet_tg.arn
+  }
+}
+
+resource "aws_lb_listener" "http_8080" {
+  load_balancer_arn = aws_lb.wallet_alb.arn
+  port              = 8080
   protocol          = "HTTP"
 
   default_action {
@@ -358,24 +377,4 @@ resource "cloudflare_record" "wallet_dns" {
   ttl     = 1
 }
 
-# Edge Origin Rule forwarding traffic to standard port 80 on the ALB
-resource "cloudflare_ruleset" "origin_port_rewrite" {
-  zone_id     = var.cloudflare_zone_id
-  name        = "Forward to ALB HTTP"
-  description = "Managed by Terraform: Route HTTPS 443 to AWS ALB Port 80"
-  kind        = "zone"
-  phase       = "http_request_origin"
-
-  rules {
-    action = "route"
-    action_parameters {
-      origin {
-        port = 80
-      }
-    }
-    expression  = "(http.host eq \"${var.subdomain_name}\")"
-    description = "Forward A Bank Wallet HTTPS to AWS ALB Port 80"
-    enabled     = true
-  }
-}
 

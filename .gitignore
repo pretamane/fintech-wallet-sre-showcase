@@ -33,6 +33,8 @@ id_rsa
 *.tfstate
 *.tfstate.*
 crash.log
+*.tfvars
+!*.tfvars.example
 
 # AWS CLI / Local state
 .aws/

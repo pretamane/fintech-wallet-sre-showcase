@@ -1,18 +1,13 @@
-# ==============================================================================
-# Terraform Variables Example (Sanitized Template)
-# Copy to terraform.tfvars and populate sensitive tokens
-# ==============================================================================
-
-aws_region            = "us-east-1"
-environment           = "production"
-service_name          = "a-bank-wallet-service"
-container_image       = "464868388812.dkr.ecr.us-east-1.amazonaws.com/a-bank-wallet-service:1.0.0"
-container_port        = 8080
-cpu_units             = "256"
-memory_units          = "512"
+aws_region           = "us-east-1"
+environment          = "production"
+service_name         = "a-bank-wallet-service"
+container_image      = "464868388812.dkr.ecr.us-east-1.amazonaws.com/a-bank-wallet-service:latest"
+container_port       = 8080
+cpu_units            = "256"
+memory_units         = "512"
 fargate_desired_count = 1
 
-cloudflare_email      = "thawzin252467@gmail.com"
-cloudflare_api_key    = "YOUR_CLOUDFLARE_GLOBAL_API_KEY_HERE"
-cloudflare_zone_id    = "7e72740785ff0c8f5484443c8025de82"
-subdomain_name        = "wallet.thaw-zin-2k77.de5.net"
+cloudflare_email     = "sre-lead@bank.com"
+cloudflare_api_key   = "redacted-global-api-key"
+cloudflare_zone_id   = "redacted-cloudflare-zone-id"
+subdomain_name       = "wallet.a-bank.com.mm"
