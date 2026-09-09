@@ -377,4 +377,76 @@ resource "cloudflare_record" "wallet_dns" {
   ttl     = 1
 }
 
+# ------------------------------------------------------------------------------
+# 10. SRE Observability: CloudWatch Metric Alarms (SLO & Failure Detection)
+# ------------------------------------------------------------------------------
+resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
+  alarm_name          = "${var.service_name}-alb-target-5xx-errors"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "HTTPCode_Target_5XX_Count"
+  namespace           = "AWS/ApplicationELB"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 3
+  alarm_description   = "Triggered when ALB target group reports >= 3 HTTP 5xx server errors within 1 minute (PCI-DSS SLA violation)"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = aws_lb.wallet_alb.arn_suffix
+    TargetGroup  = aws_lb_target_group.wallet_tg.arn_suffix
+  }
+
+  tags = {
+    Severity = "Critical"
+    SLO      = "99.95-Availability"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "alb_target_latency" {
+  alarm_name          = "${var.service_name}-alb-high-latency"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "TargetResponseTime"
+  namespace           = "AWS/ApplicationELB"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 0.250 # 250ms SLA threshold
+  alarm_description   = "Triggered when average ALB target response time exceeds 250ms for 2 consecutive minutes"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = aws_lb.wallet_alb.arn_suffix
+    TargetGroup  = aws_lb_target_group.wallet_tg.arn_suffix
+  }
+
+  tags = {
+    Severity = "Warning"
+    SLO      = "P99-Under-300ms"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "unhealthy_hosts" {
+  alarm_name          = "${var.service_name}-target-unhealthy-hosts"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "UnHealthyHostCount"
+  namespace           = "AWS/ApplicationELB"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = 0
+  alarm_description   = "Triggered when any Fargate task fails ALB health checks"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = aws_lb.wallet_alb.arn_suffix
+    TargetGroup  = aws_lb_target_group.wallet_tg.arn_suffix
+  }
+
+  tags = {
+    Severity = "Critical"
+    SLO      = "Container Reliability"
+  }
+}
+
 
