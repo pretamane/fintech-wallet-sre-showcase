@@ -1,0 +1,52 @@
+---
+# ==============================================================================
+# Role: k3s_runtime
+# Scope: Automated Enterprise K3s Lightweight Cluster Deployment
+# ==============================================================================
+
+- name: Check if K3s is already installed
+  ansible.builtin.command: which k3s
+  register: k3s_installed
+  changed_when: false
+  failed_when: false
+
+- name: Download official K3s installer
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s_installer.sh
+    mode: '0755'
+  when: k3s_installed.rc != 0
+
+- name: Install K3s Control Plane on master node
+  ansible.builtin.command: >
+    sh /tmp/k3s_installer.sh
+    --write-kubeconfig-mode 644
+    --disable traefik
+    --tls-san {{ ansible_host }}
+  environment:
+    INSTALL_K3S_CHANNEL: "{{ k3s_channel }}"
+  when:
+    - k3s_installed.rc != 0
+    - inventory_hostname in groups['k3s_control_plane']
+
+- name: Ensure K3s service is active and enabled
+  ansible.builtin.systemd:
+    name: k3s
+    state: started
+    enabled: yes
+  when: inventory_hostname in groups['k3s_control_plane']
+
+- name: Create local .kube directory for operator user
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+    mode: '0700'
+  when: inventory_hostname in groups['k3s_control_plane']
+
+- name: Link K3s kubeconfig to standard ~/.kube/config
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ ansible_env.HOME }}/.kube/config"
+    remote_src: yes
+    mode: '0600'
+  when: inventory_hostname in groups['k3s_control_plane']

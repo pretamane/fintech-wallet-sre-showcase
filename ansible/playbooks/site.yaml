@@ -1,0 +1,29 @@
+---
+# ==============================================================================
+# Master Site Orchestration Playbook: A Bank Hybrid FinTech Infrastructure
+# Scope: Hardens Bare-Metal / Edge Hosts, Provisions K3s, and Deploys Ledger
+# ==============================================================================
+
+# Phase 1: Host Hardening & Kernel Tuning across all On-Prem / Edge Fleet
+- name: Apply CIS Linux & Network Kernel Hardening
+  hosts: hybrid_fintech_fleet
+  gather_facts: yes
+  become: yes
+  roles:
+    - fintech_kernel_hardening
+
+# Phase 2: Bootstrap Lightweight K3s Cluster
+- name: Provision Lightweight K3s Kubernetes Runtime
+  hosts: k3s_control_plane
+  gather_facts: yes
+  become: yes
+  roles:
+    - k3s_runtime
+
+# Phase 3: Deploy Cloud-Agnostic Wallet Service via Helm
+- name: Deploy A Bank Wallet Microservice to Edge K3s
+  hosts: k3s_control_plane
+  gather_facts: no
+  become: yes
+  roles:
+    - wallet_helm_deploy

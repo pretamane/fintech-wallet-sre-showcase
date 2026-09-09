@@ -1,0 +1,33 @@
+---
+# ==============================================================================
+# Global Variables: A Bank Hybrid FinTech SRE Environment
+# ==============================================================================
+app_name: "a-bank-wallet-service"
+app_version: "1.0.0"
+app_port: 8080
+k3s_channel: "v1.28"
+wallet_namespace: "fintech-prod"
+
+# Kernel Tuning Values for High-Throughput Transaction Ledgers
+fintech_sysctl_settings:
+  # Max open file descriptors
+  fs.file-max: 2097152
+  # Max TCP listen socket backlog (prevents SYN drops during traffic surges)
+  net.core.somaxconn: 65535
+  # Max inbound packet queue
+  net.core.netdev_max_backlog: 16384
+  # Fast TCP connection reuse for microservice connection pools
+  net.ipv4.tcp_tw_reuse: 1
+  # SYN flood defense
+  net.ipv4.tcp_syncookies: 1
+  net.ipv4.tcp_max_syn_backlog: 8192
+  # Keepalive probes to detect dead connections faster
+  net.ipv4.tcp_keepalive_time: 300
+  net.ipv4.tcp_keepalive_intvl: 15
+  net.ipv4.tcp_keepalive_probes: 5
+  # Swappiness minimal (prevent paging ledger data to disk)
+  vm.swappiness: 10
+
+# Security Limits
+fintech_nofile_limit: 65536
+fintech_nproc_limit: 32768

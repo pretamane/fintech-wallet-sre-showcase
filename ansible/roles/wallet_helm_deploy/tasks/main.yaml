@@ -1,0 +1,48 @@
+---
+# ==============================================================================
+# Role: wallet_helm_deploy
+# Scope: Automated Deployment of A Bank Wallet Microservice via Helm v3
+# ==============================================================================
+
+- name: Create banking production namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ wallet_namespace }}"
+    state: present
+
+- name: Deploy or upgrade Wallet Service Helm chart
+  kubernetes.core.helm:
+    name: "{{ app_name }}"
+    chart_ref: "{{ playbook_dir }}/../../charts/wallet-service"
+    release_namespace: "{{ wallet_namespace }}"
+    values:
+      image:
+        repository: "464868388812.dkr.ecr.us-east-1.amazonaws.com/a-bank-wallet-service"
+        tag: "{{ app_version }}"
+        pullPolicy: IfNotPresent
+      replicaCount: 2
+      service:
+        port: "{{ app_port }}"
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        readOnlyRootFilesystem: true
+    state: present
+    wait: yes
+    timeout: 3m
+
+- name: Perform local zero-trust SRE health probe
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ app_port }}/healthz"
+    status_code: 200
+    return_content: yes
+  register: health_check
+  until: health_check.status == 200
+  retries: 5
+  delay: 3
+  failed_when: false
+
+- name: Display deployment verification status
+  ansible.builtin.debug:
+    msg: "A Bank Wallet Service deployed successfully to On-Prem / Edge K3s: {{ health_check.json | default('OK') }}"

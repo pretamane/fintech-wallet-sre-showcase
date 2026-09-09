@@ -1,0 +1,43 @@
+---
+# ==============================================================================
+# Role: fintech_kernel_hardening
+# Scope: PCI-DSS CIS Linux Kernel Tuning & High-Throughput Socket Optimization
+# ==============================================================================
+
+- name: Apply banking-grade sysctl parameters
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+    sysctl_file: /etc/sysctl.d/99-fintech-ledger.conf
+  loop: "{{ fintech_sysctl_settings | dict2items }}"
+
+- name: Configure security limits for high-concurrency ledger operations
+  ansible.builtin.template:
+    dest: /etc/security/limits.d/99-fintech-limits.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      # A Bank FinTech Security Limits
+      * soft nofile {{ fintech_nofile_limit }}
+      * hard nofile {{ fintech_nofile_limit }}
+      * soft nproc  {{ fintech_nproc_limit }}
+      * hard nproc  {{ fintech_nproc_limit }}
+      root soft nofile {{ fintech_nofile_limit }}
+      root hard nofile {{ fintech_nofile_limit }}
+
+- name: Disable core dumps for sensitive in-memory financial ledger security
+  ansible.posix.sysctl:
+    name: fs.suid_dumpable
+    value: "0"
+    state: present
+    reload: yes
+    sysctl_file: /etc/sysctl.d/99-pci-dss-security.conf
+
+- name: Ensure NTP / Chrony time synchronization is active for ACID timestamp accuracy
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: started
+    enabled: yes
