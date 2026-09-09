@@ -130,3 +130,20 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "Pushed successfully: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      # ========================================================================
+      # Supply Chain Security: Software Bill of Materials (PCI-DSS Req 6.3.2)
+      # ========================================================================
+      - name: Generate Software Bill of Materials (SBOM) with Syft
+        uses: anchore/sbom-action@v0.17.9
+        with:
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          format: spdx-json
+          output-file: a-bank-wallet-sbom.spdx.json
+
+      - name: Upload Financial Compliance SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: a-bank-compliance-sbom-${{ github.sha }}
+          path: a-bank-wallet-sbom.spdx.json
+          retention-days: 30

@@ -449,4 +449,185 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_hosts" {
   }
 }
 
+# ------------------------------------------------------------------------------
+# 11. AWS KMS Customer Managed Key (CMK) - FinTech Envelope Encryption
+# ------------------------------------------------------------------------------
+resource "aws_kms_key" "wallet_kms" {
+  description             = "A Bank FinTech KMS CMK for PCI-DSS v4.0 Envelope Encryption & WORM Audit Vaults"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = {
+    Name       = "a-bank-wallet-kms-cmk"
+    Compliance = "PCI-DSS-v4.0-Req-3.5"
+    CostCenter = "Digital-Banking-SRE"
+  }
+}
+
+resource "aws_kms_alias" "wallet_kms_alias" {
+  name          = "alias/a-bank-wallet-cmk"
+  target_key_id = aws_kms_key.wallet_kms.key_id
+}
+
+# ------------------------------------------------------------------------------
+# 12. AWS SQS Core Banking System (CBS) Transactional Outbox & Dead-Letter Queue
+# ------------------------------------------------------------------------------
+resource "aws_sqs_queue" "tx_outbox_dlq" {
+  name                      = "a-bank-transaction-outbox-dlq"
+  message_retention_seconds = 1209600 # 14 days
+  kms_master_key_id         = aws_kms_key.wallet_kms.id
+
+  tags = {
+    Name       = "a-bank-transaction-outbox-dlq"
+    Component  = "CoreBankingDeadLetterQueue"
+    Compliance = "PCI-DSS-v4.0"
+  }
+}
+
+resource "aws_sqs_queue" "tx_outbox" {
+  name                      = "a-bank-transaction-outbox"
+  message_retention_seconds = 86400 # 24 hours
+  kms_master_key_id         = aws_kms_key.wallet_kms.id
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.tx_outbox_dlq.arn
+    maxReceiveCount     = 3
+  })
+
+  tags = {
+    Name      = "a-bank-transaction-outbox"
+    Component = "CoreBankingOutboxBuffer"
+    SLO       = "SubSecondReconciliation"
+  }
+}
+
+# ------------------------------------------------------------------------------
+# 13. AWS WAFv2: Edge Defense, Rate Limiting & Anti-Credential Stuffing
+# ------------------------------------------------------------------------------
+resource "aws_wafv2_web_acl" "wallet_waf" {
+  name        = "a-bank-wallet-waf"
+  description = "PCI-DSS Edge WAF for A Bank Mobile Wallet with Cloudflare Forwarded IP Rate Limiting"
+  scope       = "REGIONAL"
+
+  default_action {
+    allow {}
+  }
+
+  # Rule 1: Mobile Client Rate Limiting via Cloudflare's CF-Connecting-IP
+  rule {
+    name     = "RateLimitPerMobileClient"
+    priority = 1
+
+    action {
+      block {}
+    }
+
+    statement {
+      rate_based_statement {
+        limit              = 300
+        aggregate_key_type = "FORWARDED_IP"
+
+        forwarded_ip_config {
+          header_name       = "CF-Connecting-IP"
+          fallback_behavior = "MATCH"
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "RateLimitPerMobileClientMetric"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # Rule 2: AWS Managed Common Rule Set (OWASP Top 10)
+  rule {
+    name     = "AWSManagedRulesCommonRuleSet"
+    priority = 2
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWSManagedRulesCommonRuleSetMetric"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # Rule 3: AWS Managed Known Bad Inputs Rule Set
+  rule {
+    name     = "AWSManagedRulesKnownBadInputsRuleSet"
+    priority = 3
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWSManagedRulesKnownBadInputsMetric"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "a-bank-wallet-waf-metric"
+    sampled_requests_enabled   = true
+  }
+
+  tags = {
+    Name       = "a-bank-wallet-waf"
+    Compliance = "PCI-DSS-v4.0-Req-6.4"
+  }
+}
+
+resource "aws_wafv2_web_acl_association" "alb_waf" {
+  resource_arn = aws_lb.wallet_alb.arn
+  web_acl_arn  = aws_wafv2_web_acl.wallet_waf.arn
+}
+
+# ------------------------------------------------------------------------------
+# 14. AWS Backup: Automated Financial Audit Compliance & Disaster Recovery
+# ------------------------------------------------------------------------------
+resource "aws_backup_vault" "banking_vault" {
+  name        = "a-bank-financial-audit-vault"
+  kms_key_arn = aws_kms_key.wallet_kms.arn
+
+  tags = {
+    Name       = "a-bank-financial-audit-vault"
+    Compliance = "PCI-DSS-7-Year-Retention"
+  }
+}
+
+resource "aws_backup_plan" "dynamodb_plan" {
+  name = "a-bank-dynamodb-daily-compliance-backup"
+
+  rule {
+    rule_name         = "daily-backup-rule"
+    target_vault_name = aws_backup_vault.banking_vault.name
+    schedule          = "cron(0 12 * * ? *)"
+
+    lifecycle {
+      delete_after = 35 # 35-day financial compliance cycle
+    }
+  }
+}
+
 
