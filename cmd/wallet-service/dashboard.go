@@ -5,471 +5,595 @@ const rootDashboardHTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A Bank Mobile Wallet • FinTech SRE Operations Console</title>
+  <title>A Bank Payment Services • Internal Operations Console</title>
   <style>
     :root {
-      --bg-base: #0a0f1d;
-      --bg-surface: #111827;
-      --bg-surface-elevated: #1f2937;
-      --border-color: #374151;
-      --primary: #10b981;
-      --primary-hover: #059669;
-      --accent: #38bdf8;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --text-main: #f9fafb;
-      --text-muted: #9ca3af;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --bg-body: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --border-light: #e2e8f0;
+      --border-dark: #cbd5e1;
+      --text-heading: #0f172a;
+      --text-body: #334155;
+      --text-muted: #64748b;
+      --primary-navy: #1e3a8a;
+      --primary-hover: #1e40af;
+      --accent-blue: #0284c7;
+      --success-green: #059669;
+      --success-bg: #ecfdf5;
+      --warning-amber: #d97706;
+      --warning-bg: #fffbeb;
+      --danger-red: #dc2626;
+      --danger-bg: #fef2f2;
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: var(--bg-base);
-      color: var(--text-main);
+      background-color: var(--bg-body);
+      color: var(--text-body);
       font-family: var(--font-sans);
       line-height: 1.5;
-      padding: 1.5rem;
+      padding: 2rem 1.5rem;
     }
     .container { max-width: 1200px; margin: 0 auto; }
+    
+    /* Header */
     header {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border-color);
-      margin-bottom: 2rem;
       gap: 1rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
     }
-    .brand-title { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-section { display: flex; align-items: center; gap: 1rem; }
     .brand-badge {
-      background: linear-gradient(135deg, #10b981, #0284c7);
-      color: #fff;
-      font-weight: 800;
-      font-size: 0.85rem;
-      padding: 0.35rem 0.65rem;
-      border-radius: 6px;
-      letter-spacing: 0.05em;
+      background-color: var(--primary-navy);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      letter-spacing: 0.08em;
     }
-    h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
-    .status-pill {
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.01em;
+    }
+    .system-status { display: flex; align-items: center; gap: 1rem; }
+    .status-tag {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      background: #064e3b;
-      color: #6ee7b7;
+      background-color: var(--success-bg);
+      color: var(--success-green);
+      border: 1px solid #a7f3d0;
       padding: 0.35rem 0.85rem;
-      border-radius: 9999px;
+      border-radius: 4px;
       font-size: 0.8rem;
       font-weight: 600;
-      border: 1px solid #059669;
     }
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background-color: #34d399;
+    .status-indicator {
+      width: 7px;
+      height: 7px;
+      background-color: var(--success-green);
       border-radius: 50%;
-      box-shadow: 0 0 8px #34d399;
-      animation: pulse 2s infinite;
     }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-    
-    /* Navigation Tabs */
-    .tabs {
+    .latency-tag {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-left: 1px solid var(--border-light);
+      padding-left: 1rem;
+    }
+
+    /* Tabs Navigation */
+    .nav-tabs {
       display: flex;
-      gap: 0.5rem;
-      border-bottom: 1px solid var(--border-color);
-      margin-bottom: 2rem;
+      gap: 0.25rem;
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 1.5rem;
       overflow-x: auto;
     }
-    .tab-btn {
+    .nav-tab {
       background: none;
       border: none;
+      border-bottom: 2px solid transparent;
       color: var(--text-muted);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 600;
       padding: 0.75rem 1.25rem;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       white-space: nowrap;
     }
-    .tab-btn:hover { color: var(--text-main); }
-    .tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
+    .nav-tab:hover { color: var(--text-heading); }
+    .nav-tab.active {
+      color: var(--primary-navy);
+      border-bottom-color: var(--primary-navy);
     }
-    
-    /* Grid Layouts */
+
+    /* Layout Grids */
     .grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
     }
     .grid-2 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
       .grid-2 { grid-template-columns: 1fr; }
     }
-    
+
     /* Cards */
     .card {
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
       padding: 1.5rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
     }
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+    .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-light);
     }
-    .balance-val {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--primary);
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-heading);
+    }
+    .account-id {
       font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+    .balance-display {
+      font-family: var(--font-mono);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary-navy);
       margin: 0.5rem 0;
     }
-    .acc-label {
+    .account-type {
       font-size: 0.8rem;
       color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
     }
-    
+
     /* Forms */
-    .form-group { margin-bottom: 1rem; }
-    label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.35rem; color: var(--text-muted); }
+    .form-group { margin-bottom: 1.1rem; }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
     input, select {
       width: 100%;
-      background-color: var(--bg-base);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
+      background-color: #ffffff;
+      border: 1px solid var(--border-dark);
+      border-radius: 5px;
       padding: 0.65rem 0.85rem;
-      color: var(--text-main);
+      color: var(--text-heading);
       font-family: inherit;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      transition: border-color 0.15s;
     }
     input:focus, select:focus {
       outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
     }
-    .btn-group { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.25rem; }
+    .chip-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+    .amount-chip {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      color: var(--text-heading);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+    .amount-chip:hover {
+      background-color: var(--border-light);
+    }
+
+    /* Buttons */
+    .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.65rem 1.25rem;
-      font-size: 0.9rem;
-      font-weight: 600;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-primary { background-color: var(--primary); color: #fff; }
-    .btn-primary:hover { background-color: var(--primary-hover); }
-    .btn-warning { background-color: #d97706; color: #fff; }
-    .btn-warning:hover { background-color: #b45309; }
-    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
-    .btn-outline:hover { background-color: var(--bg-surface-elevated); }
-    
-    /* Quick Chips */
-    .chip-container { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-    .chip {
-      background-color: var(--bg-surface-elevated);
-      border: 1px solid var(--border-color);
-      color: var(--accent);
-      padding: 0.25rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-family: var(--font-mono);
-      cursor: pointer;
-    }
-    .chip:hover { background-color: var(--border-color); }
-    
-    /* Terminal Console Output */
-    .terminal-box {
-      background-color: #030712;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 1rem;
-      font-family: var(--font-mono);
+      justify-content: center;
       font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border-radius: 5px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background-color: var(--primary-navy);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    .btn-secondary {
+      background-color: #ffffff;
+      border-color: var(--border-dark);
+      color: var(--text-heading);
+    }
+    .btn-secondary:hover {
+      background-color: var(--bg-subtle);
+    }
+    .btn-warning {
+      background-color: #ffffff;
+      border-color: var(--warning-amber);
+      color: var(--warning-amber);
+    }
+    .btn-warning:hover {
+      background-color: var(--warning-bg);
+    }
+
+    /* Terminal Console */
+    .console-box {
+      background-color: #0f172a;
       color: #38bdf8;
-      max-height: 280px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      padding: 1.25rem;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+      min-height: 280px;
+      max-height: 380px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-all;
     }
-    
-    /* Architecture Comparison Table */
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .badge-execution {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+    }
+    .badge-success { background-color: var(--success-bg); color: var(--success-green); border: 1px solid #a7f3d0; }
+    .badge-warning { background-color: var(--warning-bg); color: var(--warning-amber); border: 1px solid #fde68a; }
+    .badge-danger  { background-color: var(--danger-bg);  color: var(--danger-red);    border: 1px solid #fecaca; }
+
+    /* Tables */
+    .table-container { overflow-x: auto; margin-top: 1rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
     th, td {
       padding: 0.85rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.85rem;
     }
-    th { background-color: var(--bg-surface-elevated); color: var(--text-muted); font-weight: 600; }
-    tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
-    .badge-aws { background: #ff9900; color: #111; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem; }
-    .badge-huawei { background: #ed1c24; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem; }
-    .badge-wechat { background: #07c160; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem; }
-    
-    /* Hidden Tab Content */
-    .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
+    th {
+      background-color: var(--bg-subtle);
+      color: var(--text-heading);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    tr:hover td { background-color: #fafafa; }
+    .spec-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      color: var(--text-heading);
+    }
+
+    /* Tab Switcher */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <header>
-      <div class="brand-title">
-        <span class="brand-badge">A-BANK SRE</span>
+      <div class="brand-section">
+        <span class="brand-badge">A BANK</span>
         <div>
-          <h1>Digital Wallet & Super-App Operations Console</h1>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">High-Throughput Double-Entry Ledger • Cloudflare Edge WAF • AWS ECS Fargate</p>
+          <h1>Mobile Wallet Operations Console</h1>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.15rem;">
+            Core Ledger Engine &bull; AWS ECS Fargate &bull; Cloudflare WAF Ingress &bull; PCI-DSS v4.0 Baseline
+          </p>
         </div>
       </div>
-      <div style="display: flex; gap: 0.75rem; align-items: center;">
-        <span class="status-pill"><span class="status-dot"></span> LIVE ON FARGATE</span>
-        <span id="latencyTag" style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--accent);">Edge RTT: -- ms</span>
+      <div class="system-status">
+        <span class="status-tag"><span class="status-indicator"></span> CLUSTER ACTIVE</span>
+        <span class="latency-tag" id="latencyTicker">Latency: -- ms</span>
       </div>
     </header>
 
     <!-- Navigation Tabs -->
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('tab-ops')">💳 Live Wallet Operations</button>
-      <button class="tab-btn" onclick="switchTab('tab-metrics')">📊 SRE Observability & Metrics</button>
-      <button class="tab-btn" onclick="switchTab('tab-arch')">☁️ Super-App Cloud Architecture (KBZPay / WeChat vs AWS)</button>
-      <button class="tab-btn" onclick="switchTab('tab-runbook')">📖 Golden Test Handover Runbook</button>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('tab-ledger')">Ledger Operations</button>
+      <button class="nav-tab" onclick="showTab('tab-telemetry')">System Telemetry &amp; Metrics</button>
+      <button class="nav-tab" onclick="showTab('tab-architecture')">Cloud Architecture Specifications</button>
+      <button class="nav-tab" onclick="showTab('tab-runbook')">Verification Runbook</button>
     </div>
 
-    <!-- TAB 1: LIVE WALLET OPERATIONS -->
-    <div id="tab-ops" class="tab-pane active">
+    <!-- TAB 1: LEDGER OPERATIONS -->
+    <div id="tab-ledger" class="tab-content active">
       <!-- Balance Cards -->
       <div class="grid-3">
         <div class="card">
-          <div class="card-title">
-            <span>Customer Account A</span>
-            <span class="acc-label">ACC-1001</span>
+          <div class="card-header">
+            <span class="card-title">Customer Account A</span>
+            <span class="account-id">ACC-1001</span>
           </div>
-          <div class="balance-val" id="bal-ACC-1001">-- MMK</div>
-          <div style="font-size: 0.8rem; color: var(--text-muted);">Primary Consumer Wallet Profile</div>
+          <div class="balance-display" id="display-ACC-1001">-- MMK</div>
+          <p class="account-type">Retail Tier 1 User Profile</p>
         </div>
 
         <div class="card">
-          <div class="card-title">
-            <span>Merchant Partner B</span>
-            <span class="acc-label">ACC-2002</span>
+          <div class="card-header">
+            <span class="card-title">Merchant Partner B</span>
+            <span class="account-id">ACC-2002</span>
           </div>
-          <div class="balance-val" id="bal-ACC-2002">-- MMK</div>
-          <div style="font-size: 0.8rem; color: var(--text-muted);">Merchant POS Settlement Account</div>
+          <div class="balance-display" id="display-ACC-2002">-- MMK</div>
+          <p class="account-type">Commercial POS Settlement Account</p>
         </div>
 
         <div class="card">
-          <div class="card-title">
-            <span>Central Bank Reserve</span>
-            <span class="acc-label">ACC-9999</span>
+          <div class="card-header">
+            <span class="card-title">Central Reserve Pool</span>
+            <span class="account-id">ACC-9999</span>
           </div>
-          <div class="balance-val" id="bal-ACC-9999">-- MMK</div>
-          <div style="font-size: 0.8rem; color: var(--text-muted);">Settlement Liquidity Pool</div>
+          <div class="balance-display" id="display-ACC-9999">-- MMK</div>
+          <p class="account-type">Master Settlement Liquidity Pool</p>
         </div>
       </div>
 
-      <!-- Execution Form & Console -->
+      <!-- Transaction Form & Audit Output -->
       <div class="grid-2">
         <div class="card">
-          <div class="card-title">⚡ Execute Double-Entry Atomic Transfer</div>
-          
+          <div class="card-header">
+            <span class="card-title">Execute Double-Entry Transaction</span>
+            <span class="spec-badge">POST /api/v1/wallets/transfer</span>
+          </div>
+
           <div class="form-group">
             <label>Source Account (Debit)</label>
-            <select id="fromAcc">
-              <option value="ACC-1001">ACC-1001 (Customer A)</option>
-              <option value="ACC-2002">ACC-2002 (Merchant B)</option>
-              <option value="ACC-9999">ACC-9999 (Central Reserve)</option>
+            <select id="sourceAccount">
+              <option value="ACC-1001">ACC-1001 (Customer Account A)</option>
+              <option value="ACC-2002">ACC-2002 (Merchant Partner B)</option>
+              <option value="ACC-9999">ACC-9999 (Central Reserve Pool)</option>
             </select>
           </div>
 
           <div class="form-group">
             <label>Destination Account (Credit)</label>
-            <select id="toAcc">
-              <option value="ACC-2002">ACC-2002 (Merchant B)</option>
-              <option value="ACC-1001">ACC-1001 (Customer A)</option>
-              <option value="ACC-9999">ACC-9999 (Central Reserve)</option>
+            <select id="targetAccount">
+              <option value="ACC-2002">ACC-2002 (Merchant Partner B)</option>
+              <option value="ACC-1001">ACC-1001 (Customer Account A)</option>
+              <option value="ACC-9999">ACC-9999 (Central Reserve Pool)</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label>Amount (MMK)</label>
-            <input type="number" id="txAmount" value="25000" min="1" step="500">
-            <div class="chip-container">
-              <span class="chip" onclick="setAmount(5000)">5,000</span>
-              <span class="chip" onclick="setAmount(25000)">25,000</span>
-              <span class="chip" onclick="setAmount(50000)">50,000</span>
-              <span class="chip" onclick="setAmount(100000)">100,000</span>
+            <label>Transaction Amount (MMK)</label>
+            <input type="number" id="transferAmount" value="25000" min="1" step="500">
+            <div class="chip-group">
+              <span class="amount-chip" onclick="selectAmount(5000)">5,000</span>
+              <span class="amount-chip" onclick="selectAmount(25000)">25,000</span>
+              <span class="amount-chip" onclick="selectAmount(50000)">50,000</span>
+              <span class="amount-chip" onclick="selectAmount(100000)">100,000</span>
             </div>
           </div>
 
           <div class="form-group">
             <label>Idempotency Key (X-Idempotency-Key)</label>
             <div style="display: flex; gap: 0.5rem;">
-              <input type="text" id="idempKey" value="" style="font-family: var(--font-mono);">
-              <button class="btn btn-outline" onclick="generateUUID()">🎲 New</button>
+              <input type="text" id="idempotencyKey" style="font-family: var(--font-mono); font-size: 0.85rem;">
+              <button class="btn btn-secondary" onclick="generateNewKey()" type="button" style="white-space: nowrap;">Generate Key</button>
             </div>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-              PCI-DSS Mandate: Prevents double-debiting on mobile network timeouts.
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
+              Enforces transaction deduplication across mobile network retries.
             </p>
           </div>
 
-          <div class="btn-group">
-            <button class="btn btn-primary" onclick="submitTransfer(false)">🚀 Execute Transfer</button>
-            <button class="btn btn-warning" onclick="submitTransfer(true)" title="Resends the EXACT same key to prove idempotency">🔁 Replay Same Key (Attack Test)</button>
-            <button class="btn btn-outline" onclick="refreshBalances()">🔄 Refresh</button>
+          <div class="action-group">
+            <button class="btn btn-primary" onclick="executeTransfer(false)">Execute Transaction</button>
+            <button class="btn btn-warning" onclick="executeTransfer(true)" title="Submits with the same key to verify idempotency replay">Simulate Duplicate Request</button>
+            <button class="btn btn-secondary" onclick="updateAllBalances()">Refresh Balances</button>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">
-            <span>Audit Trail & Terminal Output</span>
-            <span id="txStatusBadge" style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted);">Idle</span>
+          <div class="card-header">
+            <span class="card-title">Transaction Receipt &amp; Audit Log</span>
+            <span id="responseStatusBadge" class="badge-execution" style="display: none;"></span>
           </div>
-          <div class="terminal-box" id="terminalOutput">// Ready for execution. Click 'Execute Transfer' above.</div>
-          <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
-            💡 <strong>SRE Pro-Tip</strong>: Click <em>"Replay Same Key"</em> to simulate a customer double-tapping the transfer button or a 4G packet replay attack. You will see <code>"idempotent_replay": true</code> and the balance will NOT debit twice.
+          <div class="console-box" id="auditConsole">// Ready. Select accounts and click 'Execute Transaction' above.</div>
+          <div style="margin-top: 1rem; padding: 0.75rem; background-color: var(--bg-subtle); border-radius: 4px; font-size: 0.75rem; color: var(--text-muted);">
+            <strong>PCI-DSS Audit Trail</strong>: Every request records atomic state change, timestamp, and idempotency status. The 'Simulate Duplicate Request' action proves that duplicate network submissions receive cached receipts with zero balance alteration.
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: SRE OBSERVABILITY & METRICS -->
-    <div id="tab-metrics" class="tab-pane">
+    <!-- TAB 2: TELEMETRY & METRICS -->
+    <div id="tab-telemetry" class="tab-content">
       <div class="grid-3">
         <div class="card">
-          <div class="card-title">Total Transactions</div>
-          <div class="balance-val" id="metric-txCount">0</div>
-          <div style="font-size: 0.8rem; color: var(--text-muted);">Executed in-memory & logged</div>
+          <div class="card-header">
+            <span class="card-title">Total Transactions</span>
+          </div>
+          <div class="balance-display" id="metric-txCount">0</div>
+          <p class="account-type">Successfully executed transactions</p>
         </div>
+
         <div class="card">
-          <div class="card-title">Total Volume Settled</div>
-          <div class="balance-val" id="metric-volume">0 MMK</div>
-          <div style="font-size: 0.8rem; color: var(--text-muted);">Cumulative ledger throughput</div>
+          <div class="card-header">
+            <span class="card-title">Total Settled Volume</span>
+          </div>
+          <div class="balance-display" id="metric-totalVolume">0 MMK</div>
+          <p class="account-type">Cumulative processed turnover</p>
         </div>
+
         <div class="card">
-          <div class="card-title">Active Idempotency Keys</div>
-          <div class="balance-val" id="metric-keys">0</div>
-          <div style="font-size: 0.8rem; color: var(--text-muted);">Deduplication cache records</div>
+          <div class="card-header">
+            <span class="card-title">Active Idempotency Records</span>
+          </div>
+          <div class="balance-display" id="metric-idempKeys">0</div>
+          <p class="account-type">Cached transaction signatures</p>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">Raw Prometheus SRE Telemetry Stream (/metrics)</div>
-        <div class="terminal-box" id="metricsOutput">// Loading telemetry data...</div>
+        <div class="card-header">
+          <span class="card-title">Prometheus Telemetry Feed (/metrics)</span>
+          <span class="spec-badge">GET /metrics</span>
+        </div>
+        <div class="console-box" id="metricsRawView">// Polling telemetry stream...</div>
       </div>
     </div>
 
-    <!-- TAB 3: SUPER-APP CLOUD ARCHITECTURE -->
-    <div id="tab-arch" class="tab-pane">
+    <!-- TAB 3: ARCHITECTURE SPECIFICATIONS -->
+    <div id="tab-architecture" class="tab-content">
       <div class="card">
-        <div class="card-title">Super-App Financial Cloud Mapping: KBZPay / WeChat Pay vs A Bank Showcase</div>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-          How this showcase replicates the cloud-native patterns of Myanmar's KBZPay (Huawei Cloud) and China's WeChat Pay (Tencent/Alipay SOFAStack) using AWS Serverless & Cloudflare:
+        <div class="card-header">
+          <span class="card-title">Tier-1 Mobile Wallet Cloud Architecture Mapping</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Cross-platform mapping between Tier-1 payment platforms (KBZPay on Huawei Cloud, WeChat Pay on Tencent Cloud) and this AWS Managed Services implementation:
         </p>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Architecture Layer</th>
-              <th>KBZPay (Huawei Cloud)</th>
-              <th>WeChat Pay / Alipay</th>
-              <th>A Bank SRE Portfolio (AWS Live)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Edge Security & DDoS</strong></td>
-              <td><span class="badge-huawei">Huawei WAF</span> Anti-DDoS</td>
-              <td><span class="badge-wechat">Tencent Dayu</span> Shield WAF</td>
-              <td><span class="badge-aws">Cloudflare Anycast</span> Edge Proxy + WAF</td>
-            </tr>
-            <tr>
-              <td><strong>Microservice Runtime</strong></td>
-              <td><span class="badge-huawei">CCE (K8s)</span> + <span class="badge-huawei">CCI Serverless</span></td>
-              <td><span class="badge-wechat">Tencent TKE</span> Matrix Containers</td>
-              <td><span class="badge-aws">AWS ECS Fargate</span> (Serverless Container Tier)</td>
-            </tr>
-            <tr>
-              <td><strong>Event Bursts / Webhooks</strong></td>
-              <td><span class="badge-huawei">FunctionGraph</span></td>
-              <td><span class="badge-wechat">Serverless SCF</span></td>
-              <td><span class="badge-aws">AWS Lambda</span> + EventBridge</td>
-            </tr>
-            <tr>
-              <td><strong>Financial Ledger DB</strong></td>
-              <td><span class="badge-huawei">GaussDB</span> (Distributed Multi-AZ)</td>
-              <td><span class="badge-wechat">TDSQL / OceanBase</span></td>
-              <td><span class="badge-aws">AWS DynamoDB</span> (On-Demand PITR + ACID)</td>
-            </tr>
-            <tr>
-              <td><strong>Infrastructure Code</strong></td>
-              <td>Huawei Cloud Terraform Provider</td>
-              <td>Terraform / Internal IaC</td>
-              <td><span class="badge-aws">Terraform</span> (AWS + Cloudflare Providers)</td>
-            </tr>
-            <tr>
-              <td><strong>On-Prem / Edge Fleet</strong></td>
-              <td>Bare-Metal Bank Branch Nodes</td>
-              <td>Bare-Metal Hybrid Private Cloud</td>
-              <td><span class="badge-aws">Ansible</span> (Kernel Hardening + K3s Fleet)</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Platform Layer</th>
+                <th>KBZPay (Huawei Cloud)</th>
+                <th>WeChat Pay / Alipay</th>
+                <th>A Bank Architecture (AWS Showcase)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Edge Security &amp; WAF</strong></td>
+                <td>Huawei Cloud WAF + Anti-DDoS</td>
+                <td>Tencent Dayu Shield WAF</td>
+                <td><span class="spec-badge">Cloudflare Anycast</span> WAF + Origin Port Rewrite</td>
+              </tr>
+              <tr>
+                <td><strong>Container Compute</strong></td>
+                <td>Cloud Container Engine (CCE) + CCI</td>
+                <td>Tencent TKE Elastic Matrix</td>
+                <td><span class="spec-badge">AWS ECS Fargate</span> (Serverless 0.25 vCPU, 512 MB)</td>
+              </tr>
+              <tr>
+                <td><strong>Event Callbacks &amp; Webhooks</strong></td>
+                <td>Huawei FunctionGraph</td>
+                <td>Serverless Cloud Functions (SCF)</td>
+                <td><span class="spec-badge">AWS Lambda</span> + Amazon EventBridge</td>
+              </tr>
+              <tr>
+                <td><strong>Financial Ledger Storage</strong></td>
+                <td>Huawei GaussDB (Distributed Relational)</td>
+                <td>Tencent TDSQL / Ant OceanBase</td>
+                <td><span class="spec-badge">Amazon DynamoDB</span> (On-Demand ACID + PITR)</td>
+              </tr>
+              <tr>
+                <td><strong>Infrastructure as Code</strong></td>
+                <td>Huawei Cloud Terraform Provider</td>
+                <td>Terraform Enterprise</td>
+                <td><span class="spec-badge">HashiCorp Terraform</span> v1.5+ (AWS + Cloudflare)</td>
+              </tr>
+              <tr>
+                <td><strong>On-Premises Edge Fleet</strong></td>
+                <td>Bare-Metal Branch Infrastructure</td>
+                <td>Hybrid Private Cloud Nodes</td>
+                <td><span class="spec-badge">Red Hat Ansible</span> (CIS Hardening + K3s Fleet)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- TAB 4: GOLDEN TEST HANDOVER RUNBOOK -->
-    <div id="tab-runbook" class="tab-pane">
+    <!-- TAB 4: RUNBOOK -->
+    <div id="tab-runbook" class="tab-content">
       <div class="card">
-        <div class="card-title">SRE Golden Test CLI Verification Runbook</div>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Interviewers and engineers can test this exact running cluster from any terminal using standard CLI tools:
+        <div class="card-header">
+          <span class="card-title">SRE Golden Test CLI Verification Runbook</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+          The running cluster can be validated independently via standard terminal commands:
         </p>
 
-        <div style="margin-bottom: 1.5rem;">
-          <h3 style="font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem;">1. Zero-Trust Health & Readiness Probes</h3>
-          <div class="terminal-box">curl -i "https://wallet.thaw-zin-2k77.de5.net/healthz"
-curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz"</div>
+        <div style="margin-bottom: 1.25rem;">
+          <p style="font-size: 0.8rem; font-weight: 600; color: var(--text-heading); margin-bottom: 0.35rem;">1. Zero-Trust Health Check</p>
+          <div class="console-box" style="min-height: auto; padding: 0.85rem;">curl -i "https://wallet.thaw-zin-2k77.de5.net/healthz"</div>
         </div>
 
-        <div style="margin-bottom: 1.5rem;">
-          <h3 style="font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem;">2. Live Account Balance Query</h3>
-          <div class="terminal-box">curl -s "https://wallet.thaw-zin-2k77.de5.net/api/v1/wallets/ACC-1001/balance" | jq .</div>
+        <div style="margin-bottom: 1.25rem;">
+          <p style="font-size: 0.8rem; font-weight: 600; color: var(--text-heading); margin-bottom: 0.35rem;">2. Account Balance Verification</p>
+          <div class="console-box" style="min-height: auto; padding: 0.85rem;">curl -s "https://wallet.thaw-zin-2k77.de5.net/api/v1/wallets/ACC-1001/balance" | jq .</div>
         </div>
 
-        <div style="margin-bottom: 1.5rem;">
-          <h3 style="font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem;">3. Atomic Transfer with Strict Idempotency Key</h3>
-          <div class="terminal-box">curl -s -X POST "https://wallet.thaw-zin-2k77.de5.net/api/v1/wallets/transfer" \
+        <div style="margin-bottom: 1.25rem;">
+          <p style="font-size: 0.8rem; font-weight: 600; color: var(--text-heading); margin-bottom: 0.35rem;">3. Double-Entry Transfer with Idempotency Key</p>
+          <div class="console-box" style="min-height: auto; padding: 0.85rem;">curl -s -X POST "https://wallet.thaw-zin-2k77.de5.net/api/v1/wallets/transfer" \
      -H "Content-Type: application/json" \
      -H "X-Idempotency-Key: GOLDEN-TEST-001" \
-     -d '{"from_account":"ACC-1001","to_account":"ACC-2002","amount":10000,"currency":"MMK","reference":"Interview Golden Test"}' | jq .</div>
+     -d '{"from_account":"ACC-1001","to_account":"ACC-2002","amount":10000,"currency":"MMK","reference":"Golden Test"}' | jq .</div>
         </div>
 
         <div>
-          <h3 style="font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem;">4. GitHub Source Repository & CI/CD Pipeline</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">
-            Source Code: <a href="https://github.com/pretamane/fintech-wallet-sre-showcase" target="_blank" style="color: var(--accent);">github.com/pretamane/fintech-wallet-sre-showcase</a>
+          <p style="font-size: 0.8rem; font-weight: 600; color: var(--text-heading); margin-bottom: 0.35rem;">4. Public Git Repository &amp; Pipeline Source</p>
+          <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--primary-navy);">
+            https://github.com/pretamane/fintech-wallet-sre-showcase
           </p>
         </div>
       </div>
@@ -477,81 +601,83 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz"</div>
   </div>
 
   <script>
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+    function showTab(targetId) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       event.target.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-      if (tabId === 'tab-metrics') refreshMetrics();
+      document.getElementById(targetId).classList.add('active');
+      if (targetId === 'tab-telemetry') fetchTelemetry();
     }
 
-    function setAmount(val) {
-      document.getElementById('txAmount').value = val;
+    function selectAmount(val) {
+      document.getElementById('transferAmount').value = val;
     }
 
-    function generateUUID() {
-      const uuid = 'TX-' + Math.random().toString(36).substring(2, 9).toUpperCase() + '-' + Date.now().toString().slice(-4);
-      document.getElementById('idempKey').value = uuid;
+    function generateNewKey() {
+      const generated = 'TX-' + Math.random().toString(36).substring(2, 9).toUpperCase() + '-' + Date.now().toString().slice(-4);
+      document.getElementById('idempotencyKey').value = generated;
     }
 
-    async function measureLatency() {
-      const start = performance.now();
+    async function probeLatency() {
+      const startTime = performance.now();
       try {
         await fetch('/healthz');
-        const duration = Math.round(performance.now() - start);
-        document.getElementById('latencyTag').innerText = 'Edge RTT: ' + duration + ' ms';
-      } catch (e) {
-        document.getElementById('latencyTag').innerText = 'Edge RTT: err';
+        const elapsed = Math.round(performance.now() - startTime);
+        document.getElementById('latencyTicker').innerText = 'Latency: ' + elapsed + ' ms';
+      } catch (err) {
+        document.getElementById('latencyTicker').innerText = 'Latency: N/A';
       }
     }
 
-    async function fetchAccountBalance(accId) {
+    async function queryBalance(accId) {
       try {
-        const res = await fetch('/api/v1/wallets/' + accId + '/balance');
-        if (res.ok) {
-          const data = await res.json();
-          document.getElementById('bal-' + accId).innerText = Number(data.balance).toLocaleString() + ' MMK';
+        const response = await fetch('/api/v1/wallets/' + accId + '/balance');
+        if (response.ok) {
+          const payload = await response.json();
+          document.getElementById('display-' + accId).innerText = Number(payload.balance).toLocaleString() + ' MMK';
         }
       } catch (e) {}
     }
 
-    async function refreshBalances() {
-      await fetchAccountBalance('ACC-1001');
-      await fetchAccountBalance('ACC-2002');
-      await fetchAccountBalance('ACC-9999');
-      measureLatency();
+    async function updateAllBalances() {
+      await queryBalance('ACC-1001');
+      await queryBalance('ACC-2002');
+      await queryBalance('ACC-9999');
+      probeLatency();
     }
 
-    async function refreshMetrics() {
+    async function fetchTelemetry() {
       try {
-        const res = await fetch('/metrics');
-        if (res.ok) {
-          const data = await res.json();
+        const response = await fetch('/metrics');
+        if (response.ok) {
+          const data = await response.json();
           document.getElementById('metric-txCount').innerText = data.total_transactions || 0;
-          document.getElementById('metric-volume').innerText = (data.total_volume || 0).toLocaleString() + ' MMK';
-          document.getElementById('metric-keys').innerText = data.idempotency_keys || 0;
-          document.getElementById('metricsOutput').innerText = JSON.stringify(data, null, 2);
+          document.getElementById('metric-totalVolume').innerText = (data.total_volume || 0).toLocaleString() + ' MMK';
+          document.getElementById('metric-idempKeys').innerText = data.idempotency_keys || 0;
+          document.getElementById('metricsRawView').innerText = JSON.stringify(data, null, 2);
         }
       } catch (e) {}
     }
 
-    async function submitTransfer(isReplay) {
-      const fromAcc = document.getElementById('fromAcc').value;
-      const toAcc = document.getElementById('toAcc').value;
-      const amount = parseFloat(document.getElementById('txAmount').value);
-      let key = document.getElementById('idempKey').value.trim();
+    async function executeTransfer(isDuplicateSimulation) {
+      const fromAcc = document.getElementById('sourceAccount').value;
+      const toAcc = document.getElementById('targetAccount').value;
+      const amount = parseFloat(document.getElementById('transferAmount').value);
+      let key = document.getElementById('idempotencyKey').value.trim();
 
       if (!key) {
-        generateUUID();
-        key = document.getElementById('idempKey').value;
+        generateNewKey();
+        key = document.getElementById('idempotencyKey').value;
       }
 
-      const terminal = document.getElementById('terminalOutput');
-      const badge = document.getElementById('txStatusBadge');
-      terminal.innerText = '>>> POST /api/v1/wallets/transfer\n>>> X-Idempotency-Key: ' + key + '\n>>> Submitting transaction payload...';
+      const consoleEl = document.getElementById('auditConsole');
+      const badgeEl = document.getElementById('responseStatusBadge');
+      
+      consoleEl.innerText = '>>> POST /api/v1/wallets/transfer\n>>> X-Idempotency-Key: ' + key + '\n>>> Submitting transaction payload to ledger...';
+      badgeEl.style.display = 'none';
 
       try {
-        const res = await fetch('/api/v1/wallets/transfer', {
+        const response = await fetch('/api/v1/wallets/transfer', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -566,36 +692,39 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz"</div>
           })
         });
 
-        const data = await res.json();
-        terminal.innerText = '<<< HTTP ' + res.status + ' ' + res.statusText + '\n' + JSON.stringify(data, null, 2);
+        const result = await response.json();
+        consoleEl.innerText = '<<< HTTP ' + response.status + ' ' + response.statusText + '\n' + JSON.stringify(result, null, 2);
+        badgeEl.style.display = 'inline-block';
 
-        if (res.ok) {
-          if (data.idempotent_replay) {
-            badge.innerText = '🟡 IDEMPOTENT REPLAY (200 OK)';
-            badge.style.color = 'var(--warning)';
+        if (response.ok) {
+          if (result.idempotent_replay) {
+            badgeEl.className = 'badge-execution badge-warning';
+            badgeEl.innerText = 'STATUS: 200 OK (IDEMPOTENT_REPLAY)';
           } else {
-            badge.innerText = '🟢 NEW TRANSACTION (200 OK)';
-            badge.style.color = 'var(--primary)';
-            if (!isReplay) generateUUID(); // Prepare next key
+            badgeEl.className = 'badge-execution badge-success';
+            badgeEl.innerText = 'STATUS: 200 OK (NEW_TRANSACTION)';
+            if (!isDuplicateSimulation) {
+              generateNewKey();
+            }
           }
         } else {
-          badge.innerText = '🔴 ERROR ' + res.status;
-          badge.style.color = 'var(--danger)';
+          badgeEl.className = 'badge-execution badge-danger';
+          badgeEl.innerText = 'STATUS: ' + response.status + ' ERROR';
         }
 
-        refreshBalances();
+        updateAllBalances();
       } catch (err) {
-        terminal.innerText = '<<< Network Error: ' + err.message;
-        badge.innerText = '🔴 FAILED';
-        badge.style.color = 'var(--danger)';
+        consoleEl.innerText = '<<< Network Connection Failure: ' + err.message;
+        badgeEl.style.display = 'inline-block';
+        badgeEl.className = 'badge-execution badge-danger';
+        badgeEl.innerText = 'CONNECTION ERROR';
       }
     }
 
-    // Initialize on load
     window.onload = function() {
-      generateUUID();
-      refreshBalances();
-      setInterval(measureLatency, 8000);
+      generateNewKey();
+      updateAllBalances();
+      setInterval(probeLatency, 10000);
     };
   </script>
 </body>
