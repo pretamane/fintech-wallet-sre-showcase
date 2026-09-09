@@ -407,4 +407,3 @@ func (app *Application) writeJSON(w http.ResponseWriter, status int, data interf
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(data)
 }
-
