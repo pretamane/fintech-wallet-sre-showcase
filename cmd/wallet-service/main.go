@@ -176,6 +176,22 @@ func (le *LedgerEngine) GetBalance(accountID string) (*Account, error) {
 	}, nil
 }
 
+// GetAccounts returns defensive copies of all registered accounts
+func (le *LedgerEngine) GetAccounts() []*Account {
+	le.mu.RLock()
+	defer le.mu.RUnlock()
+
+	accounts := make([]*Account, 0, len(le.accounts))
+	for _, acc := range le.accounts {
+		accounts = append(accounts, &Account{
+			AccountID: acc.AccountID,
+			Balance:   acc.Balance,
+			Currency:  acc.Currency,
+		})
+	}
+	return accounts
+}
+
 // MetricsSummary returns internal SRE telemetry
 func (le *LedgerEngine) MetricsSummary() map[string]interface{} {
 	le.mu.RLock()
@@ -227,11 +243,15 @@ func main() {
 	// Financial API Routes
 	mux.HandleFunc("POST /api/v1/wallets/transfer", app.handleTransfer)
 	mux.HandleFunc("GET /api/v1/wallets/{account_id}/balance", app.handleBalance)
+	mux.HandleFunc("GET /api/v1/wallets", app.handleListAccounts)
 
 	// SRE Observability & Health Probes (ECS / Kubernetes / Fargate)
 	mux.HandleFunc("GET /healthz", app.handleHealthz)
 	mux.HandleFunc("GET /readyz", app.handleReadyz)
 	mux.HandleFunc("GET /metrics", app.handleMetrics)
+
+	// Root Route: Interactive FinTech SRE Console (HTML / JSON)
+	mux.HandleFunc("GET /", app.handleRoot)
 
 	server := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -344,8 +364,47 @@ func (app *Application) handleMetrics(w http.ResponseWriter, r *http.Request) {
 	app.writeJSON(w, http.StatusOK, metrics)
 }
 
+func (app *Application) handleListAccounts(w http.ResponseWriter, r *http.Request) {
+	accounts := app.ledger.GetAccounts()
+	app.writeJSON(w, http.StatusOK, accounts)
+}
+
+func (app *Application) handleRoot(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
+	if strings.Contains(r.Header.Get("Accept"), "application/json") {
+		app.writeJSON(w, http.StatusOK, map[string]interface{}{
+			"service":              "A Bank FinTech Mobile Wallet Microservice",
+			"division":             "Consumer Mobile Wallet & Digital Payments SRE",
+			"status":               "OPERATIONAL",
+			"runtime":              "AWS ECS Fargate (Serverless Container Tier)",
+			"edge_gateway":         "Cloudflare Anycast Global CDN & WAF",
+			"architecture_pattern": "Hybrid Cloud-Native FinTech Parity (CCE/Fargate + GaussDB/DynamoDB)",
+			"endpoints": map[string]string{
+				"root_dashboard": "/",
+				"accounts":       "GET /api/v1/wallets",
+				"balance":        "GET /api/v1/wallets/{account_id}/balance",
+				"transfer":       "POST /api/v1/wallets/transfer",
+				"health":         "GET /healthz",
+				"readiness":      "GET /readyz",
+				"metrics":        "GET /metrics",
+			},
+			"version": "1.0.0",
+		})
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(rootDashboardHTML))
+}
+
 func (app *Application) writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(data)
 }
+
