@@ -1,0 +1,47 @@
+# ==============================================================================
+# A Bank Mobile Wallet - GitOps Continuous Delivery Specification (ArgoCD)
+# Zero-Human-Kubectl Access: Git as the Single Source of Truth
+# Automated Drift Detection & Self-Healing Reconciliation
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: a-bank-wallet-service
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: a-bank-wallet-service
+    app.kubernetes.io/part-of: a-bank-fintech-suite
+    banking.tier: production-core
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/pretamane/fintech-wallet-sre-showcase.git
+    targetRevision: main
+    path: charts/wallet-service
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+        - name: image.tag
+          value: "1.0.0"
+        - name: replicaCount
+          value: "3"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: a-bank-production
+  syncPolicy:
+    automated:
+      prune: true    # Automatically delete orphaned K8s resources removed from Git
+      selfHeal: true # Instantly revert manual kubectl configuration drift
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

@@ -92,8 +92,19 @@ autoscaling:
 
 nodeSelector: {}
 tolerations: []
+# Multi-AZ Fault Tolerance & Anti-Affinity
 affinity:
   podAntiAffinity:
+    # 1. Physical Datacenter (Availability Zone) Anti-Affinity (AWS us-east-1a / us-east-1b / us-east-1c)
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - wallet-service
+        topologyKey: topology.kubernetes.io/zone
+    # 2. Host Node Anti-Affinity (Never pack replicas on the same physical bare metal node)
     preferredDuringSchedulingIgnoredDuringExecution:
       - weight: 100
         podAffinityTerm:
@@ -104,3 +115,24 @@ affinity:
                 values:
                   - wallet-service
           topologyKey: kubernetes.io/hostname
+
+# Enterprise Reliability: PodDisruptionBudget (PDB)
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# PCI-DSS v4.0 Micro-Segmentation: Zero-Trust NetworkPolicy
+networkPolicy:
+  enabled: true
+
+# Advanced Burst Autoscaling: KEDA (Proactive SQS / Kafka queue-depth scaling)
+keda:
+  enabled: true
+  minReplicaCount: 2
+  maxReplicaCount: 40
+  targetQueueLength: 30
+  cooldownPeriod: 120
+  pollingInterval: 10
+  sqsQueueURL: "https://sqs.us-east-1.amazonaws.com/464868388812/a-bank-transaction-ingest"
+  awsRegion: "us-east-1"
+

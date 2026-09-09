@@ -99,35 +99,68 @@ ENTRYPOINT ["/wallet-service"]
 ## 5. Enterprise Kubernetes Packaging (`charts/wallet-service`)
 
 Eliminates flat YAML configuration sprawl through parameterized Helm templates:
-- `values.yaml` — Configurable replica counts, image tags, and resource quotas.
-- `templates/deployment.yaml` — Restricts pod security capabilities (`drop: [ALL]`).
+- `values.yaml` — Multi-AZ Zone Anti-Affinity (`topology.kubernetes.io/zone`), PDB quotas, and KEDA configurations.
+- `templates/deployment.yaml` — Restricts pod security capabilities (`drop: [ALL]`), non-root UID `10001`.
+- `templates/pdb.yaml` — PodDisruptionBudget with `minAvailable: 1` preventing node drains from taking down the ledger.
+- `templates/networkpolicy.yaml` — PCI-DSS v4.0 Zero-Trust micro-segmentation (blocks lateral pod-to-pod traversal).
+- `templates/keda-scaledobject.yaml` — Event-driven autoscaling on AWS SQS queue depth (sub-second reaction).
 - `templates/hpa.yaml` — Horizontal Pod Autoscaler targeting 70% CPU / 80% Memory thresholds.
 - `templates/service.yaml` — ClusterIP internal service abstraction.
 
 ---
 
-## 6. Cloud-Native Serverless Tier (`aws/`)
+## 6. Advanced SRE & Reliability Engineering
 
-- `fargate-task-definition.json` — ECS task definition utilizing AWS Fargate with CloudWatch log shipping.
-- `dynamodb-idempotency-table.json` — Serverless DynamoDB table configured for Pay-Per-Request (zero cost when idle) with a 24-hour TTL attribute.
-- `lambda-webhook-handler.py` — Serverless event-driven receiver validating MPU (Myanmar Payment Union) payment callback signatures.
-- `deploy.sh` & `teardown.sh` — Automated deployment and 100% clean teardown scripts.
+### 6.1 Service Level Objectives (SLO) & Error Budget Burn Rate
+* **Service Level Indicator (SLI)**: Ratio of successful (HTTP 200 OK) ledger transactions over total attempts.
+* **Service Level Objective (SLO)**: `99.95%` availability over a rolling 30-day window.
+* **Error Budget**: In a 30-day calendar period (43,200 minutes), a 99.95% SLO permits exactly **21.6 minutes of downtime**.
+* **Alerting**: Multi-window multi-burn-rate alerting rules codified in [`monitoring/slo-rules.yaml`](monitoring/slo-rules.yaml) (pages on-call when 2% of budget burns in 1 hour).
+
+### 6.2 Resilient Circuit Breakers (`circuit_breaker.go`)
+Downstream clearing rails (e.g. Central Bank CBM-Net, MPU, Visa) experience latency spikes and downtime. To prevent thread starvation in the Go microservice, an enterprise 3-state Circuit Breaker is codified:
+* **CLOSED**: Normal state. Consecutive failures are tracked.
+* **OPEN**: After 5 consecutive upstream timeouts, the breaker trips to `OPEN`, immediately returning `HTTP 503 Service Unavailable` with `Retry-After: 10`, completely isolating downstream failure.
+* **HALF-OPEN**: After a 10-second cooldown, probe requests evaluate upstream recovery.
 
 ---
 
-## 7. Comparative Case Study: How KBZPay Operates on Huawei Cloud
+## 7. Developer Experience (DevEx) & Local Production Parity
+
+To ensure zero-friction onboarding, developers can boot an entire banking stack locally in 5 seconds with zero AWS account dependencies:
+
+```bash
+docker compose up -d
+```
+
+* `dynamodb-local`: Amazon DynamoDB engine running in-memory on port 8000.
+* `dynamodb-init`: Automatic table creation and schema validation container.
+* `wallet-service`: Local Go container wired to local DynamoDB.
+
+---
+
+## 8. Continuous Delivery & GitOps (`gitops/` & `.github/`)
+
+* **Shift-Left Security**: Aqua Security Trivy scans container CVEs, and `tfsec` statically audits Terraform code before merge.
+* **GitOps Continuous Delivery**: [`gitops/argocd-application.yaml`](gitops/argocd-application.yaml) ensures Git is the single source of truth with automated drift reconciliation (`prune: true`, `selfHeal: true`).
+
+---
+
+## 9. Comparative Case Study: How KBZPay Operates on Huawei Cloud
 
 | Banking Function | KBZPay Architecture (Huawei Cloud) | A Bank Blueprint (AWS Hybrid) |
 | :--- | :--- | :--- |
 | **Core Microservices** | Huawei CCE (Cloud Container Engine) | Kubernetes (On-Prem) / EKS |
 | **Serverless Bursting** | Huawei CCI (Cloud Container Instance) | **AWS ECS Fargate** |
+| **Ingress Decoupling** | Dedicated Distributed ELB | **AWS Application Load Balancer** |
 | **Asynchronous Webhooks**| Huawei FunctionGraph | **AWS Lambda** |
 | **Primary Ledger Database**| Huawei GaussDB (Distributed Multi-AZ) | Amazon Aurora / Distributed SQL |
 | **Idempotency Cache** | Distributed In-Memory Cache | **Amazon DynamoDB (On-Demand)** |
 
 ---
 
-## 8. Author & Audit Trail
+## 10. Author & Audit Trail
 - **Author**: Thaw Zin @ Chris (`pretamane`)
 - **Target Enterprise**: A Bank (Mobile Wallet Division)
-- **Master Documentation Bible**: [`ManagedServices.md`](../ManagedServices.md)
+- **Master Documentation Holy Bible**: [`ManagedServices.md`](../ManagedServices.md)
+

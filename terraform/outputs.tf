@@ -23,12 +23,29 @@ output "cloudflare_ingress_url" {
   value       = "https://${var.subdomain_name}/healthz"
 }
 
+output "alb_dns_name" {
+  description = "AWS Application Load Balancer Public Regional DNS Name"
+  value       = aws_lb.wallet_alb.dns_name
+}
+
+output "alb_arn" {
+  description = "AWS Application Load Balancer ARN"
+  value       = aws_lb.wallet_alb.arn
+}
+
+output "target_group_arn" {
+  description = "AWS ALB Target Group ARN (IP Target Type for Fargate awsvpc)"
+  value       = aws_lb_target_group.wallet_tg.arn
+}
+
 output "architecture_summary" {
   description = "Summary of provisioned FinTech infrastructure"
   value = {
-    cloud_tier      = "AWS ECS Fargate Serverless"
-    database_tier   = "DynamoDB On-Demand (ACID Idempotency)"
-    edge_tier       = "Cloudflare Anycast WAF + Origin Port 8080 Rewrite"
-    compliance_spec = "PCI-DSS v4.0 Non-Root Distroless Runtime"
+    cloud_tier      = "AWS ECS Fargate Hybrid (Base On-Demand + Burst Spot)"
+    load_balancer   = "AWS Application Load Balancer (Dual-AZ Decoupled Ingress)"
+    database_tier   = "DynamoDB On-Demand (ACID Idempotency Engine)"
+    edge_tier       = "Cloudflare Anycast WAF + Static CNAME Decoupling"
+    compliance_spec = "PCI-DSS v4.0 Network Micro-Segmentation & Non-Root Scratch"
   }
 }
+

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"testing"
+	"time"
 )
 
 func TestDoubleEntryTransfer(t *testing.T) {
@@ -99,3 +101,78 @@ func TestInsufficientFunds(t *testing.T) {
 		t.Fatalf("Expected error for insufficient funds, got nil")
 	}
 }
+
+func TestCircuitBreakerTripping(t *testing.T) {
+	cb := NewCircuitBreaker("test-rail", CircuitBreakerConfig{
+		FailureThreshold: 3,
+		SuccessThreshold: 2,
+		CooldownWindow:   100 * time.Millisecond,
+	})
+
+	if cb.State() != StateClosed {
+		t.Fatalf("Expected initial state CLOSED, got %s", cb.State())
+	}
+
+	testErr := errors.New("upstream timeout")
+
+	// Trigger 3 consecutive failures
+	for i := 0; i < 3; i++ {
+		err := cb.Execute(func() error {
+			return testErr
+		})
+		if !errors.Is(err, testErr) {
+			t.Fatalf("Expected testErr, got %v", err)
+		}
+	}
+
+	// 4th call must fail fast with ErrCircuitOpen without executing the inner func
+	invoked := false
+	err := cb.Execute(func() error {
+		invoked = true
+		return nil
+	})
+
+	if !errors.Is(err, ErrCircuitOpen) {
+		t.Fatalf("Expected ErrCircuitOpen, got %v", err)
+	}
+	if invoked {
+		t.Fatalf("Expected operation to NOT be executed when circuit is OPEN")
+	}
+}
+
+func TestCircuitBreakerRecovery(t *testing.T) {
+	cb := NewCircuitBreaker("test-recovery-rail", CircuitBreakerConfig{
+		FailureThreshold: 2,
+		SuccessThreshold: 2,
+		CooldownWindow:   50 * time.Millisecond,
+	})
+
+	cb.ForceTrip()
+	if cb.State() != StateOpen {
+		t.Fatalf("Expected state OPEN after ForceTrip, got %s", cb.State())
+	}
+
+	// Wait for cooldown to expire
+	time.Sleep(60 * time.Millisecond)
+
+	// In HALF-OPEN, first success
+	err := cb.Execute(func() error {
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Expected probe to succeed, got %v", err)
+	}
+
+	// Second success closes the circuit
+	err = cb.Execute(func() error {
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Expected second probe to succeed, got %v", err)
+	}
+
+	if cb.State() != StateClosed {
+		t.Fatalf("Expected circuit to recover to CLOSED, got %s", cb.State())
+	}
+}
+

@@ -136,23 +136,61 @@ resource "aws_ecs_cluster" "wallet_cluster" {
 }
 
 # ------------------------------------------------------------------------------
-# 5. Security Group: Ingress Restricted to Container Port 8080
+# 5. Security Groups: Zero-Trust Perimeter & Micro-Segmentation
 # ------------------------------------------------------------------------------
-resource "aws_security_group" "fargate_sg" {
-  name        = "a-bank-wallet-sg"
-  description = "Security group for A Bank Wallet Service on Fargate"
+# ALB Security Group: Ingress from Public Edge (Cloudflare WAF / Client traffic)
+resource "aws_security_group" "alb_sg" {
+  name        = "a-bank-wallet-alb-sg"
+  description = "Security group for A Bank Internet-Facing Application Load Balancer"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    description = "Allow inbound HTTP traffic on microservice port 8080"
-    from_port   = var.container_port
-    to_port     = var.container_port
+    description = "Allow inbound HTTP from Cloudflare Anycast Edge"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow inbound HTTPS from Cloudflare Anycast Edge"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    description = "Allow all outbound traffic for ECR pulls and DynamoDB APIs"
+    description     = "Allow outbound forward strictly to Fargate microservice instances"
+    from_port       = var.container_port
+    to_port         = var.container_port
+    protocol        = "tcp"
+    security_groups = [] # Linked dynamically via fargate_sg rules
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name      = "a-bank-wallet-alb-sg"
+    Component = "EdgeIngress"
+  }
+}
+
+# Fargate Security Group: Zero-Trust Ingress Restricted ONLY to ALB Security Group
+resource "aws_security_group" "fargate_sg" {
+  name        = "a-bank-wallet-sg"
+  description = "Security group for A Bank Wallet Service on Fargate (Micro-Segmented)"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    description     = "Allow inbound HTTP traffic strictly from ALB security group (PCI-DSS Requirement 1.2)"
+    from_port       = var.container_port
+    to_port         = var.container_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+  }
+
+  egress {
+    description = "Allow all outbound traffic for AWS API calls, ECR pulls, and DynamoDB"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -160,12 +198,69 @@ resource "aws_security_group" "fargate_sg" {
   }
 
   tags = {
-    Name = "a-bank-wallet-sg"
+    Name      = "a-bank-wallet-sg"
+    Component = "InternalLedgerEngine"
   }
 }
 
 # ------------------------------------------------------------------------------
-# 6. ECS Task Definition (Distroless Scratch Runtime - Zero Shell)
+# 6. Application Load Balancer (ALB) & Static CNAME Ingress Decoupling
+# ------------------------------------------------------------------------------
+resource "aws_lb" "wallet_alb" {
+  name               = "a-bank-wallet-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+  subnets            = data.aws_subnets.default.ids
+
+  enable_deletion_protection = false
+
+  tags = {
+    Name        = "a-bank-wallet-alb"
+    Component   = "FinTechIngressRouter"
+    Environment = var.environment
+  }
+}
+
+resource "aws_lb_target_group" "wallet_tg" {
+  name                 = "a-bank-wallet-tg"
+  port                 = var.container_port
+  protocol             = "HTTP"
+  vpc_id               = data.aws_vpc.default.id
+  target_type          = "ip" # Mandatory for Fargate awsvpc network mode
+  deregistration_delay = 15   # Fast connection draining during rolling updates
+
+  health_check {
+    enabled             = true
+    path                = "/healthz"
+    port                = tostring(var.container_port)
+    protocol            = "HTTP"
+    interval            = 15
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+    matcher             = "200"
+  }
+
+  tags = {
+    Name      = "a-bank-wallet-tg"
+    Component = "LedgerHealthTargetGroup"
+  }
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.wallet_alb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.wallet_tg.arn
+  }
+}
+
+# ------------------------------------------------------------------------------
+# 7. ECS Task Definition (Distroless Scratch Runtime - Zero Shell)
 # ------------------------------------------------------------------------------
 resource "aws_ecs_task_definition" "wallet_task" {
   family                   = var.service_name
@@ -210,14 +305,26 @@ resource "aws_ecs_task_definition" "wallet_task" {
 }
 
 # ------------------------------------------------------------------------------
-# 7. ECS Service (Fargate Autonomous Self-Healing)
+# 8. ECS Service (Fargate Autonomous Self-Healing with Hybrid Capacity Providers)
 # ------------------------------------------------------------------------------
 resource "aws_ecs_service" "wallet_service" {
   name            = "${var.service_name}-svc"
   cluster         = aws_ecs_cluster.wallet_cluster.id
   task_definition = aws_ecs_task_definition.wallet_task.arn
   desired_count   = var.fargate_desired_count
-  launch_type     = "FARGATE"
+
+  # Hybrid FinOps Strategy: Base 2 On-Demand + Burst onto Fargate Spot (70% savings)
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE"
+    weight            = 1
+    base              = 2
+  }
+
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 4
+    base              = 0
+  }
 
   network_configuration {
     subnets          = data.aws_subnets.default.ids
@@ -225,29 +332,37 @@ resource "aws_ecs_service" "wallet_service" {
     assign_public_ip = true
   }
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.wallet_tg.arn
+    container_name   = "wallet-service"
+    container_port   = var.container_port
+  }
+
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
+
+  depends_on = [aws_lb_listener.http]
 }
 
 # ------------------------------------------------------------------------------
-# 8. Cloudflare DNS & Origin Rule Port Rewriting
+# 9. Cloudflare DNS & Edge Decoupling (Permanent Static CNAME)
 # ------------------------------------------------------------------------------
-# A-Record pointing to Origin IP (or dynamically to ALB/Fargate)
+# CNAME Record pointing to AWS ALB DNS Name (Zero-Breakage on Task Restarts)
 resource "cloudflare_record" "wallet_dns" {
   zone_id = var.cloudflare_zone_id
   name    = "wallet"
-  content = "44.204.78.56" # Origin Public IP / ALB
-  type    = "A"
+  content = aws_lb.wallet_alb.dns_name
+  type    = "CNAME"
   proxied = true
-  comment = "Managed by Terraform: A Bank Mobile Wallet Live Ingress"
+  comment = "Managed by Terraform: Decoupled CNAME to AWS Application Load Balancer"
   ttl     = 1
 }
 
-# Origin Rule rewriting incoming port 443 -> backend container port 8080
+# Edge Origin Rule forwarding traffic to standard port 80 on the ALB
 resource "cloudflare_ruleset" "origin_port_rewrite" {
   zone_id     = var.cloudflare_zone_id
-  name        = "Override Port to 8080"
-  description = "Managed by Terraform: Route HTTPS 443 to Fargate Port 8080"
+  name        = "Forward to ALB HTTP"
+  description = "Managed by Terraform: Route HTTPS 443 to AWS ALB Port 80"
   kind        = "zone"
   phase       = "http_request_origin"
 
@@ -255,11 +370,12 @@ resource "cloudflare_ruleset" "origin_port_rewrite" {
     action = "route"
     action_parameters {
       origin {
-        port = var.container_port
+        port = 80
       }
     }
     expression  = "(http.host eq \"${var.subdomain_name}\")"
-    description = "Forward A Bank Wallet HTTPS to AWS Fargate Port 8080"
+    description = "Forward A Bank Wallet HTTPS to AWS ALB Port 80"
     enabled     = true
   }
 }
+

@@ -207,9 +207,10 @@ func (le *LedgerEngine) MetricsSummary() map[string]interface{} {
 
 // Application encapsulates the HTTP server and routes
 type Application struct {
-	config Config
-	ledger *LedgerEngine
-	logger *log.Logger
+	config     Config
+	ledger     *LedgerEngine
+	logger     *log.Logger
+	cbmBreaker *CircuitBreaker
 }
 
 func main() {
@@ -232,10 +233,17 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
+	breaker := NewCircuitBreaker("CBM-Net-Central-Bank-Rail", CircuitBreakerConfig{
+		FailureThreshold: 5,
+		SuccessThreshold: 2,
+		CooldownWindow:   10 * time.Second,
+	})
+
 	app := &Application{
-		config: cfg,
-		ledger: NewLedgerEngine(),
-		logger: logger,
+		config:     cfg,
+		ledger:     NewLedgerEngine(),
+		logger:     logger,
+		cbmBreaker: breaker,
 	}
 
 	mux := http.NewServeMux()
@@ -244,6 +252,11 @@ func main() {
 	mux.HandleFunc("POST /api/v1/wallets/transfer", app.handleTransfer)
 	mux.HandleFunc("GET /api/v1/wallets/{account_id}/balance", app.handleBalance)
 	mux.HandleFunc("GET /api/v1/wallets", app.handleListAccounts)
+
+	// Resilience Engineering & Chaos Testing (Circuit Breaker Controls)
+	mux.HandleFunc("GET /api/v1/resilience/circuit-breaker", app.handleCircuitBreakerStatus)
+	mux.HandleFunc("POST /api/v1/resilience/circuit-breaker/trip", app.handleCircuitBreakerTrip)
+	mux.HandleFunc("POST /api/v1/resilience/circuit-breaker/reset", app.handleCircuitBreakerReset)
 
 	// SRE Observability & Health Probes (ECS / Kubernetes / Fargate)
 	mux.HandleFunc("GET /healthz", app.handleHealthz)
@@ -356,17 +369,47 @@ func (app *Application) handleHealthz(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) handleReadyz(w http.ResponseWriter, r *http.Request) {
-	// In production, verifies database pool connectivity, redis lock manager, etc.
-	app.writeJSON(w, http.StatusOK, map[string]string{
-		"status": "READY",
-		"ledger": "ONLINE",
+	status := "READY"
+	httpStatus := http.StatusOK
+	if app.cbmBreaker.State() == StateOpen {
+		status = "DEGRADED_DOWNSTREAM_RAIL_OPEN"
+		httpStatus = http.StatusServiceUnavailable
+	}
+
+	app.writeJSON(w, httpStatus, map[string]interface{}{
+		"status":          status,
+		"ledger":          "ONLINE",
+		"circuit_breaker": app.cbmBreaker.State().String(),
 	})
 }
 
 func (app *Application) handleMetrics(w http.ResponseWriter, r *http.Request) {
 	metrics := app.ledger.MetricsSummary()
 	metrics["timestamp"] = time.Now().UTC()
+	metrics["circuit_breaker"] = app.cbmBreaker.Summary()
 	app.writeJSON(w, http.StatusOK, metrics)
+}
+
+func (app *Application) handleCircuitBreakerStatus(w http.ResponseWriter, r *http.Request) {
+	app.writeJSON(w, http.StatusOK, app.cbmBreaker.Summary())
+}
+
+func (app *Application) handleCircuitBreakerTrip(w http.ResponseWriter, r *http.Request) {
+	app.cbmBreaker.ForceTrip()
+	app.logger.Println("Circuit breaker manually TRIPPED to OPEN for chaos testing")
+	app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "Circuit breaker forced to OPEN state for chaos testing",
+		"state":   app.cbmBreaker.State().String(),
+	})
+}
+
+func (app *Application) handleCircuitBreakerReset(w http.ResponseWriter, r *http.Request) {
+	app.cbmBreaker.ForceReset()
+	app.logger.Println("Circuit breaker manually RESET to CLOSED")
+	app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "Circuit breaker reset to CLOSED state",
+		"state":   app.cbmBreaker.State().String(),
+	})
 }
 
 func (app *Application) handleListAccounts(w http.ResponseWriter, r *http.Request) {
@@ -393,9 +436,10 @@ func (app *Application) handleRoot(w http.ResponseWriter, r *http.Request) {
 				"accounts":       "GET /api/v1/wallets",
 				"balance":        "GET /api/v1/wallets/{account_id}/balance",
 				"transfer":       "POST /api/v1/wallets/transfer",
-				"health":         "GET /healthz",
-				"readiness":      "GET /readyz",
-				"metrics":        "GET /metrics",
+				"health":          "GET /healthz",
+				"readiness":       "GET /readyz",
+				"metrics":         "GET /metrics",
+				"circuit_breaker": "GET /api/v1/resilience/circuit-breaker",
 			},
 			"version": "1.0.0",
 		})

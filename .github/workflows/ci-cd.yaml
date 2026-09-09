@@ -31,18 +31,20 @@ jobs:
           go-version: '1.22'
           cache: true
 
-      - name: Go Format & Vet Verification
+      - name: Go Format, Vet & Race-Condition Unit Tests
         run: |
           echo "Verifying Go code formatting and static analysis..."
           diff -u <(echo -n) <(gofmt -d .)
           go vet ./...
+          echo "Running atomic double-entry ledger & circuit breaker test suite..."
+          go test -v -race ./cmd/wallet-service/...
 
       - name: Set up Helm v3
         uses: azure/setup-helm@v4
         with:
           version: v3.14.0
 
-      - name: Helm Chart Linting
+      - name: Helm Chart Linting (PDB, NetworkPolicy, KEDA, Deployment)
         run: |
           echo "Linting Kubernetes Helm Chart for A Bank standards..."
           helm lint charts/wallet-service/
@@ -73,13 +75,31 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
   # ============================================================================
-  # Stage 3: Build & Push to AWS Elastic Container Registry (ECR)
+  # Stage 3: Infrastructure-as-Code Static Security Analysis (Shift-Left DevSecOps)
+  # ============================================================================
+  iac-security-scan:
+    name: Terraform Security & Policy Audit (tfsec)
+    runs-on: ubuntu-latest
+    needs: quality-gate
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Run Aqua Security tfsec Static Code Analysis
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: terraform
+          soft_fail: true
+
+  # ============================================================================
+  # Stage 4: Build & Push to AWS Elastic Container Registry (ECR)
   # ============================================================================
   deploy-ecr:
     name: Build & Push to Amazon ECR
     runs-on: ubuntu-latest
-    needs: security-scan
+    needs: [security-scan, iac-security-scan]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4

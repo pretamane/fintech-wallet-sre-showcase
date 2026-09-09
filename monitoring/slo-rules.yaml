@@ -1,0 +1,70 @@
+# ==============================================================================
+# A Bank Mobile Wallet - SRE SLO & Multi-Window Error Budget Alerting Rules
+# Standard: Google Site Reliability Engineering (SRE) Multi-Burn-Rate Architecture
+# SLO: 99.95% Availability over a 30-Day Rolling Window (Budget: 21.6 min downtime)
+# ==============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: a-bank-wallet-slo-rules
+  namespace: monitoring
+  labels:
+    role: alert-rules
+    app.kubernetes.io/part-of: a-bank-fintech-suite
+spec:
+  groups:
+    - name: wallet_sli_recording_rules
+      rules:
+        # SLI: Successful transaction percentage over 5-minute rolling window
+        - record: job:wallet_success_ratio:rate5m
+          expr: >-
+            sum(rate(http_requests_total{job="wallet-service", status=~"2.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="wallet-service"}[5m]))
+
+        # SLI: Successful transaction percentage over 1-hour rolling window
+        - record: job:wallet_success_ratio:rate1h
+          expr: >-
+            sum(rate(http_requests_total{job="wallet-service", status=~"2.."}[1h]))
+            /
+            sum(rate(http_requests_total{job="wallet-service"}[1h]))
+
+    - name: wallet_error_budget_burn_rate_alerts
+      rules:
+        # Page SRE On-Call: 14.4x Burn Rate consumes 2% of total 30-day budget in 1 hour
+        - alert: WalletErrorBudgetBurnRateCritical
+          expr: (1 - job:wallet_success_ratio:rate1h) > (14.4 * (1 - 0.9995))
+          for: 2m
+          labels:
+            severity: critical
+            tier: core-banking
+            slo: availability-99.95
+          annotations:
+            summary: "CRITICAL: A Bank Wallet Error Budget burning at 14.4x rate"
+            description: "High rate of transaction errors (HTTP 5xx). At this burn rate, the entire monthly 21.6-minute error budget will be exhausted within 50 hours."
+            runbook_url: "https://wiki.internal.abank.com.mm/sre/runbooks/wallet-burn-rate"
+
+        # Warning / Slack: 6x Burn Rate consumes 5% of total 30-day budget in 6 hours
+        - alert: WalletErrorBudgetBurnRateWarning
+          expr: (1 - job:wallet_success_ratio:rate1h) > (6.0 * (1 - 0.9995))
+          for: 15m
+          labels:
+            severity: warning
+            tier: core-banking
+            slo: availability-99.95
+          annotations:
+            summary: "WARNING: A Bank Wallet Error Budget burning at 6x rate"
+            description: "Transaction error rate elevated above baseline. Sustained burn will consume 5% of monthly error budget."
+            runbook_url: "https://wiki.internal.abank.com.mm/sre/runbooks/wallet-burn-rate"
+
+        # Circuit Breaker Trip: External clearing partner outage isolation
+        - alert: WalletCircuitBreakerTripped
+          expr: wallet_circuit_breaker_state{state="OPEN"} == 1
+          for: 30s
+          labels:
+            severity: warning
+            tier: payment-rails
+          annotations:
+            summary: "Circuit Breaker TRIPPED for {{ $labels.rail }}"
+            description: "Downstream banking partner rail is returning consecutive timeouts. Circuit breaker has tripped OPEN to fail-fast and preserve wallet thread pools."
+            runbook_url: "https://wiki.internal.abank.com.mm/sre/runbooks/circuit-breaker"
