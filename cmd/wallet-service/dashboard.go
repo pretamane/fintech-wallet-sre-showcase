@@ -6,6 +6,7 @@ const rootDashboardHTML = `<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>A Bank Payment Services • Internal Operations Console</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e3a8a'/%3E%3Ctext x='16' y='23' font-family='-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif' font-size='20' font-weight='800' fill='%23ffffff' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
   <style>
     :root {
       --bg-body: #f8fafc;

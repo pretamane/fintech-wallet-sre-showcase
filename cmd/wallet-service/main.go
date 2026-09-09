@@ -249,6 +249,11 @@ func main() {
 	mux.HandleFunc("GET /healthz", app.handleHealthz)
 	mux.HandleFunc("GET /readyz", app.handleReadyz)
 	mux.HandleFunc("GET /metrics", app.handleMetrics)
+	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/svg+xml")
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		_, _ = w.Write([]byte(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#1e3a8a"/><text x="16" y="23" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="20" font-weight="800" fill="#ffffff" text-anchor="middle">A</text></svg>`))
+	})
 
 	// Root Route: Interactive FinTech SRE Console (HTML / JSON)
 	mux.HandleFunc("GET /", app.handleRoot)
