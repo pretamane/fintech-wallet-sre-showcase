@@ -49,6 +49,20 @@ jobs:
           echo "Linting Kubernetes Helm Chart for A Bank standards..."
           helm lint charts/wallet-service/
 
+      - name: Validate Prometheus Alerting Rules (promtool)
+        run: |
+          echo "Validating native Prometheus SLO rules with promtool..."
+          curl -sL https://github.com/prometheus/prometheus/releases/download/v2.54.1/prometheus-2.54.1.linux-amd64.tar.gz | tar -xz -C /tmp
+          /tmp/prometheus-2.54.1.linux-amd64/promtool check rules monitoring/prometheus-rules.yaml
+          rm -rf /tmp/prometheus-2.54.1.linux-amd64
+
+      - name: Validate GitOps & Kubernetes CRDs (kubeconform)
+        run: |
+          echo "Validating ArgoCD & PrometheusRule CRDs against official schemas..."
+          curl -sL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar -xz -C /tmp
+          /tmp/kubeconform -summary -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' gitops/argocd-application.yaml monitoring/slo-rules.yaml
+          rm -f /tmp/kubeconform
+
   # ============================================================================
   # Stage 2: Container Security & Vulnerability Scanning (PCI-DSS Mandate)
   # ============================================================================

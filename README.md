@@ -239,7 +239,8 @@ Comprehensive financial telemetry is codified in [monitoring/](monitoring/):
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-* **Prometheus Alerting Rules (`monitoring/slo-rules.yaml`)**:
+* **Prometheus Alerting Rules (`monitoring/slo-rules.yaml` & `monitoring/prometheus-rules.yaml`)**:
+  * **Dual Engine Validation**: Fully validated via `promtool check rules` (native PromQL engine) and `kubeconform` (Kubernetes `monitoring.coreos.com/v1 PrometheusRule` CRD schema).
   * **99.95% Availability SLO Burn Rate**: Multi-window burn rate alerts triggering at $14.4\times$ burn over 1 hour (critical page) and $6\times$ burn over 6 hours (warning ticket).
   * **P99 Latency Breach**: Alerts if $P_{99} > 250\text{ ms}$ sustained over a 5-minute evaluation window.
   * **Circuit Breaker Tripped**: Immediate P1 alert whenever an external payment rail transitions to `OPEN`.
