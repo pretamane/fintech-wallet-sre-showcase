@@ -1296,7 +1296,7 @@ Notice that /readyz drops to HTTP 503 (DEGRADED) while /healthz stays HTTP 200 (
     async function probeWAF(type) {
       const input = document.getElementById('wafPayloadInput');
       if (type === 'SQLi') input.value = "' UNION SELECT * FROM accounts--";
-      if (type === 'XSS') input.value = "<script>alert('pci')</script>";
+      if (type === 'XSS') input.value = "<script>alert('pci')<" + "/script>";
       if (type === 'Clean') input.value = "Retail payment for grocery order #4912";
 
       const consoleEl = document.getElementById('wafConsole');
