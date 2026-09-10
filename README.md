@@ -18,10 +18,29 @@ Engineered specifically for financial-grade reliability, it resolves the core ar
 
 The infrastructure is codified in **HashiCorp Terraform** (27 active cloud resources) and deployed live to AWS with Cloudflare Anycast perimeter routing.
 
-### Verified Live Endpoints
-* **Public Gateway (Edge Verified)**: `https://wallet.thaw-zin-2k77.de5.net/healthz`
-* **Live SRE Circuit Breaker Telemetry**: `https://wallet.thaw-zin-2k77.de5.net/api/v1/resilience/circuit-breaker`
-* **Ledger Readiness Probe**: `https://wallet.thaw-zin-2k77.de5.net/readyz`
+### Verified Live Endpoints & SRE Operations Console
+* **Interactive SRE Operations Console**: `https://wallet.thaw-zin-2k77.de5.net/`
+* **Container Liveness Probe**: `https://wallet.thaw-zin-2k77.de5.net/healthz` (HTTP 200 UP)
+* **Downstream Rail Readiness Probe**: `https://wallet.thaw-zin-2k77.de5.net/readyz` (503 on rail failure)
+* **Circuit Breaker Telemetry**: `https://wallet.thaw-zin-2k77.de5.net/api/v1/resilience/circuit-breaker`
+* **Alertmanager Webhook**: `https://wallet.thaw-zin-2k77.de5.net/api/v1/alerts/webhook`
+* **DevSecOps WAF Security Probe**: `https://wallet.thaw-zin-2k77.de5.net/api/v1/devsecops/waf-probe`
+* **AWS KMS CMK Envelope Encryption**: `https://wallet.thaw-zin-2k77.de5.net/api/v1/devsecops/kms-encrypt`
+* **CBS Decoupling SQS FIFO Outbox**: `https://wallet.thaw-zin-2k77.de5.net/api/v1/cbs/outbox-dispatch`
+* **Prometheus Golden Signals Stream**: `https://wallet.thaw-zin-2k77.de5.net/metrics`
+
+### Automated SRE CLI Tooling
+* **Automated 8-Pillar Game-Day Chaos Runner**:
+  ```bash
+  ./scripts/game-day.sh
+  # Runs automated end-to-end regression: Healthz -> WAF SQLi -> KMS -> Circuit Trip -> Alertmanager -> Outbox -> ACK
+  ```
+* **FinOps Lifecycle & Cost Governance Controller**:
+  ```bash
+  ./scripts/finops-lifecycle.sh status   # Query live ECS & ALB compute state
+  ./scripts/finops-lifecycle.sh pause    # Scale ECS tasks to 0 (pause billing)
+  ./scripts/finops-lifecycle.sh resume   # Scale ECS tasks to 1 (restore in ~30s)
+  ```
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐

@@ -38,3 +38,5 @@ crash.log
 
 # AWS CLI / Local state
 .aws/
+*.tfplan
+tfplan
