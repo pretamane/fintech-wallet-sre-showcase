@@ -102,6 +102,7 @@ jobs:
       - name: Run Aqua Security tfsec Static Code Analysis
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           working_directory: terraform
           soft_fail: true
 
