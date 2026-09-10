@@ -5,6 +5,7 @@
 *.so
 *.dylib
 /wallet-service
+/scripts/stress-test
 
 # Test and coverage artifacts
 *.out

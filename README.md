@@ -41,6 +41,13 @@ The infrastructure is codified in **HashiCorp Terraform** (27 active cloud resou
   ./scripts/finops-lifecycle.sh pause    # Scale ECS tasks to 0 (pause billing)
   ./scripts/finops-lifecycle.sh resume   # Scale ECS tasks to 1 (restore in ~30s)
   ```
+* **Enterprise Concurrency & SRE Stress Test Suite**:
+  ```bash
+  ./scripts/stress-test.sh                         # Run all 5 pillars against live production
+  ./scripts/stress-test.sh -scenario replay        # High-concurrency replay attack (zero double-debit)
+  ./scripts/stress-test.sh -c 25 -requests 100     # 25 concurrent workers, 100 requests
+  ./scripts/stress-test.sh -target http://localhost:8080 -requests 1000  # High-throughput local benchmark
+  ```
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
