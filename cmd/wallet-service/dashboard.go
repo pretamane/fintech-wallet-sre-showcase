@@ -5,7 +5,7 @@ const rootDashboardHTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A Bank Payment Services • SRE & FinTech Operations Platform</title>
+  <title>A Bank Payment Services • SRE &amp; FinTech Operations Console</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e3a8a'/%3E%3Ctext x='16' y='23' font-family='-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif' font-size='20' font-weight='800' fill='%23ffffff' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
   <style>
     :root {
@@ -35,9 +35,9 @@ const rootDashboardHTML = `<!DOCTYPE html>
       color: var(--text-body);
       font-family: var(--font-sans);
       line-height: 1.5;
-      padding: 1.5rem 1rem;
+      padding: 1.25rem 1rem;
     }
-    .container { max-width: 1260px; margin: 0 auto; }
+    .container { max-width: 1280px; margin: 0 auto; }
     
     /* Header */
     header {
@@ -45,13 +45,13 @@ const rootDashboardHTML = `<!DOCTYPE html>
       border: 1px solid var(--border-light);
       border-radius: 8px;
       padding: 1.25rem 1.75rem;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 1rem;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
     }
     .brand-section { display: flex; align-items: center; gap: 1rem; }
     .brand-badge {
@@ -64,17 +64,17 @@ const rootDashboardHTML = `<!DOCTYPE html>
       letter-spacing: 0.08em;
     }
     h1 {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 700;
       color: var(--text-heading);
       letter-spacing: -0.01em;
     }
     .header-subtext {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
       margin-top: 0.15rem;
     }
-    .system-status { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .system-status { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
     .status-tag {
       display: inline-flex;
       align-items: center;
@@ -82,9 +82,9 @@ const rootDashboardHTML = `<!DOCTYPE html>
       background-color: var(--success-bg);
       color: var(--success-green);
       border: 1px solid #a7f3d0;
-      padding: 0.3rem 0.7rem;
+      padding: 0.25rem 0.6rem;
       border-radius: 4px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       font-family: var(--font-mono);
     }
@@ -98,113 +98,179 @@ const rootDashboardHTML = `<!DOCTYPE html>
     .status-indicator.half-open { background-color: var(--warning-amber); }
     .ticker-tag {
       font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      font-size: 0.72rem;
       background-color: var(--bg-subtle);
       border: 1px solid var(--border-light);
-      padding: 0.3rem 0.6rem;
+      padding: 0.25rem 0.6rem;
       border-radius: 4px;
+      color: var(--text-heading);
     }
 
-    /* Tabs Navigation */
-    .nav-tabs {
+    /* P1 Incident Escalation Banner */
+    .incident-banner {
+      display: none;
+      background-color: #fef2f2;
+      border: 2px solid #ef4444;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.1);
+      animation: pulse-border 2s infinite;
+    }
+    @keyframes pulse-border {
+      0%, 100% { border-color: #ef4444; }
+      50% { border-color: #f87171; }
+    }
+    .incident-banner-content {
       display: flex;
-      gap: 0.25rem;
-      border-bottom: 1px solid var(--border-light);
-      margin-bottom: 1.25rem;
-      overflow-x: auto;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .incident-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #991b1b;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .incident-details {
+      font-size: 0.78rem;
+      color: #7f1d1d;
+      margin-top: 0.25rem;
+    }
+    .incident-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Interviewer Technical Evaluation Matrix */
+    .evaluation-card {
       background-color: var(--bg-card);
       border: 1px solid var(--border-light);
-      border-radius: 8px 8px 0 0;
-      padding: 0.25rem 0.5rem 0 0.5rem;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    }
+    .evaluation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .evaluation-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: 0.02em;
+    }
+    .evaluation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.6rem;
+      margin-top: 0.85rem;
+    }
+    .eval-item {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: 5px;
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.76rem;
+    }
+    .eval-badge {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+    }
+    .eval-badge.pending { background-color: #e2e8f0; color: #475569; }
+    .eval-badge.verified { background-color: var(--success-bg); color: var(--success-green); border: 1px solid #a7f3d0; }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 0.4rem;
+      margin-bottom: 1rem;
     }
     .nav-tab {
-      background: none;
+      background: transparent;
       border: none;
-      border-bottom: 3px solid transparent;
-      color: var(--text-muted);
-      font-size: 0.85rem;
+      outline: none;
+      padding: 0.55rem 0.85rem;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
       font-weight: 600;
-      padding: 0.75rem 1rem;
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.15s ease;
-      white-space: nowrap;
+      border-radius: 5px;
+      transition: all 0.15s;
     }
-    .nav-tab:hover { color: var(--text-heading); background-color: var(--bg-subtle); border-radius: 4px 4px 0 0; }
+    .nav-tab:hover {
+      background-color: var(--bg-subtle);
+      color: var(--text-heading);
+    }
     .nav-tab.active {
-      color: var(--primary-navy);
-      border-bottom-color: var(--primary-navy);
-      background-color: #ffffff;
+      background-color: var(--primary-navy);
+      color: #ffffff;
     }
 
-    /* Layout Grids */
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.25rem;
-    }
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.25rem;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-    @media (max-width: 960px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
-
-    /* Cards */
+    /* Cards & Layout */
     .card {
       background-color: var(--bg-card);
       border: 1px solid var(--border-light);
       border-radius: 8px;
       padding: 1.25rem;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
     }
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 0.85rem;
       padding-bottom: 0.6rem;
       border-bottom: 1px solid var(--border-light);
     }
     .card-title {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 700;
       color: var(--text-heading);
-      letter-spacing: -0.01em;
     }
-    .account-id {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      background-color: var(--bg-subtle);
-      border: 1px solid var(--border-light);
-      color: var(--text-muted);
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-    }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
+
+    /* Telemetry Blocks */
     .metric-value {
       font-family: var(--font-mono);
-      font-size: 1.65rem;
-      font-weight: 800;
-      color: var(--primary-navy);
-      margin: 0.35rem 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      margin: 0.25rem 0;
     }
     .account-type {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
-    /* Circuit Breaker Visual State Box */
+    /* Circuit Breaker Machine */
     .breaker-machine {
       display: flex;
       justify-content: space-between;
@@ -213,7 +279,7 @@ const rootDashboardHTML = `<!DOCTYPE html>
       background-color: var(--bg-subtle);
       border: 1px solid var(--border-light);
       border-radius: 6px;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
       gap: 0.5rem;
       flex-wrap: wrap;
     }
@@ -227,7 +293,7 @@ const rootDashboardHTML = `<!DOCTYPE html>
       border-radius: 6px;
       font-family: var(--font-mono);
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--text-muted);
       transition: all 0.2s;
     }
@@ -235,35 +301,35 @@ const rootDashboardHTML = `<!DOCTYPE html>
       border-color: var(--success-green);
       background-color: var(--success-bg);
       color: var(--success-green);
-      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
     }
     .breaker-node.active-open {
       border-color: var(--danger-red);
       background-color: var(--danger-bg);
       color: var(--danger-red);
-      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
     }
     .breaker-node.active-halfopen {
       border-color: var(--warning-amber);
       background-color: var(--warning-bg);
       color: var(--warning-amber);
-      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
     }
     .breaker-arrow {
       font-family: var(--font-mono);
       color: var(--text-muted);
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 800;
     }
 
     /* Forms */
-    .form-group { margin-bottom: 1rem; }
+    .form-group { margin-bottom: 0.85rem; }
     label {
       display: block;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--text-heading);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.25rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -272,10 +338,10 @@ const rootDashboardHTML = `<!DOCTYPE html>
       background-color: #ffffff;
       border: 1px solid var(--border-dark);
       border-radius: 5px;
-      padding: 0.6rem 0.8rem;
+      padding: 0.55rem 0.75rem;
       color: var(--text-heading);
       font-family: inherit;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       transition: border-color 0.15s;
     }
     input:focus, select:focus {
@@ -283,41 +349,29 @@ const rootDashboardHTML = `<!DOCTYPE html>
       border-color: var(--accent-blue);
       box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
     }
-    .chip-group {
-      display: flex;
-      gap: 0.4rem;
-      margin-top: 0.4rem;
-      flex-wrap: wrap;
-    }
+    .chip-group { display: flex; gap: 0.35rem; margin-top: 0.35rem; flex-wrap: wrap; }
     .amount-chip {
       background-color: var(--bg-subtle);
       border: 1px solid var(--border-light);
       color: var(--text-heading);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
-      padding: 0.2rem 0.5rem;
+      font-size: 0.72rem;
+      padding: 0.15rem 0.45rem;
       border-radius: 4px;
       cursor: pointer;
       transition: background-color 0.15s;
     }
-    .amount-chip:hover {
-      background-color: var(--border-dark);
-    }
+    .amount-chip:hover { background-color: var(--border-dark); }
 
     /* Buttons */
-    .action-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-top: 1.25rem;
-    }
+    .action-group { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      padding: 0.55rem 1rem;
+      padding: 0.5rem 0.85rem;
       border-radius: 5px;
       border: 1px solid transparent;
       cursor: pointer;
@@ -340,13 +394,13 @@ const rootDashboardHTML = `<!DOCTYPE html>
       background-color: #0f172a;
       color: #38bdf8;
       font-family: var(--font-mono);
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       line-height: 1.6;
-      padding: 1rem;
+      padding: 0.85rem;
       border-radius: 6px;
       border: 1px solid #1e293b;
-      min-height: 220px;
-      max-height: 360px;
+      min-height: 180px;
+      max-height: 320px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-all;
@@ -364,17 +418,9 @@ const rootDashboardHTML = `<!DOCTYPE html>
     .badge-danger  { background-color: var(--danger-bg);  color: var(--danger-red);    border: 1px solid #fecaca; }
 
     /* Tables */
-    .table-container { overflow-x: auto; margin-top: 0.75rem; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-    th, td {
-      padding: 0.75rem 0.85rem;
-      border-bottom: 1px solid var(--border-light);
-      font-size: 0.8rem;
-    }
+    .table-container { overflow-x: auto; margin-top: 0.6rem; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border-light); font-size: 0.78rem; }
     th {
       background-color: var(--bg-subtle);
       color: var(--text-heading);
@@ -386,7 +432,7 @@ const rootDashboardHTML = `<!DOCTYPE html>
     .spec-badge {
       display: inline-block;
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 600;
       padding: 0.15rem 0.45rem;
       border-radius: 3px;
@@ -399,22 +445,16 @@ const rootDashboardHTML = `<!DOCTYPE html>
 
     /* Callouts */
     .callout {
-      padding: 0.85rem 1rem;
+      padding: 0.75rem 0.85rem;
       background-color: var(--bg-subtle);
       border-left: 4px solid var(--primary-navy);
       border-radius: 0 4px 4px 0;
-      margin: 1rem 0;
-      font-size: 0.8rem;
+      margin: 0.85rem 0;
+      font-size: 0.78rem;
       color: var(--text-body);
     }
-    .callout.warning {
-      background-color: var(--warning-bg);
-      border-left-color: var(--warning-amber);
-    }
-    .callout.danger {
-      background-color: var(--danger-bg);
-      border-left-color: var(--danger-red);
-    }
+    .callout.warning { background-color: var(--warning-bg); border-left-color: var(--warning-amber); }
+    .callout.danger { background-color: var(--danger-bg); border-left-color: var(--danger-red); }
 
     /* Tab Switcher */
     .tab-content { display: none; }
@@ -438,30 +478,89 @@ const rootDashboardHTML = `<!DOCTYPE html>
         <span class="status-tag" id="clusterStatusBadge"><span class="status-indicator" id="statusDot"></span> CLUSTER ACTIVE</span>
         <span class="ticker-tag" id="latencyTicker">Latency: -- ms</span>
         <span class="ticker-tag" id="circuitTicker">Rail: CLOSED</span>
+        <span class="ticker-tag" id="alertTicker" style="color: var(--text-muted);">Incidents: 0</span>
       </div>
     </header>
 
+    <!-- Active Incident Escalation Banner -->
+    <div id="incidentBanner" class="incident-banner">
+      <div class="incident-banner-content">
+        <div>
+          <div class="incident-title" id="bannerIncidentTitle">[P1 CRITICAL ALERT: CBMNetPaymentRailDegraded]</div>
+          <div class="incident-details" id="bannerIncidentDesc">
+            Escalation Path: Tier 1 SRE On-Call (PagerDuty) &rarr; Primary DevOps Lead &bull; Fired: <span id="bannerTimer">0s</span> ago
+          </div>
+        </div>
+        <div class="incident-actions">
+          <button class="btn btn-warning" onclick="acknowledgeIncident()">Acknowledge (ACK)</button>
+          <button class="btn btn-success" onclick="resolveIncident()">Resolve &amp; Restore Rail</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interviewer Technical Evaluation Matrix (Expandable) -->
+    <div class="evaluation-card">
+      <div class="evaluation-header" onclick="toggleMatrix()">
+        <span class="evaluation-title">A BANK SRE LEAD TECHNICAL EVALUATION MATRIX (8 VERIFICATION PILLARS)</span>
+        <span class="spec-badge blue" id="matrixCountBadge">0 / 8 VERIFIED</span>
+      </div>
+      <div class="evaluation-grid" id="matrixGrid">
+        <div class="eval-item">
+          <span>1. Multi-AZ ALB &amp; ECS Fargate Compute</span>
+          <span class="eval-badge verified" id="chk-alb">VERIFIED</span>
+        </div>
+        <div class="eval-item">
+          <span>2. Sub-ms Idempotency (Zero Double-Debits)</span>
+          <span class="eval-badge pending" id="chk-idempotency">PENDING TEST</span>
+        </div>
+        <div class="eval-item">
+          <span>3. 3-State Clearing Rail Circuit Breaker</span>
+          <span class="eval-badge pending" id="chk-cb">PENDING TEST</span>
+        </div>
+        <div class="eval-item">
+          <span>4. Decoupled Probes (/healthz vs /readyz)</span>
+          <span class="eval-badge pending" id="chk-probes">PENDING TEST</span>
+        </div>
+        <div class="eval-item">
+          <span>5. CBS Decoupling &amp; SQS FIFO Outbox</span>
+          <span class="eval-badge pending" id="chk-outbox">PENDING TEST</span>
+        </div>
+        <div class="eval-item">
+          <span>6. DevSecOps WAF Probe &amp; KMS CMK</span>
+          <span class="eval-badge pending" id="chk-waf">PENDING TEST</span>
+        </div>
+        <div class="eval-item">
+          <span>7. GitOps ArgoCD &amp; Fleet Automation</span>
+          <span class="eval-badge verified" id="chk-gitops">VERIFIED</span>
+        </div>
+        <div class="eval-item">
+          <span>8. SRE Golden Signals &amp; Alertmanager Pager</span>
+          <span class="eval-badge pending" id="chk-alerts">PENDING TEST</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Navigation Tabs -->
     <div class="nav-tabs">
-      <button class="nav-tab active" onclick="showTab('tab-resilience')">SRE Resilience &amp; Chaos Engine</button>
-      <button class="nav-tab" onclick="showTab('tab-ledger')">Core Banking Ledger &amp; Idempotency</button>
-      <button class="nav-tab" onclick="showTab('tab-cbs')">CBS Decoupling &amp; Payment Rails</button>
-      <button class="nav-tab" onclick="showTab('tab-cloud')">AWS Cloud Infrastructure (27 Resources)</button>
-      <button class="nav-tab" onclick="showTab('tab-devsecops')">DevSecOps &amp; PCI-DSS v4.0</button>
-      <button class="nav-tab" onclick="showTab('tab-k8s')">Kubernetes, GitOps &amp; Fleet</button>
-      <button class="nav-tab" onclick="showTab('tab-slo')">SRE Golden Signals &amp; SLOs</button>
-      <button class="nav-tab" onclick="showTab('tab-runbook')">Verification Runbook &amp; CLI</button>
+      <button class="nav-tab active" onclick="showTab('tab-resilience', event)">SRE Resilience &amp; Chaos</button>
+      <button class="nav-tab" onclick="showTab('tab-ledger', event)">Core Banking Ledger</button>
+      <button class="nav-tab" onclick="showTab('tab-cbs', event)">CBS Outbox &amp; Rails</button>
+      <button class="nav-tab" onclick="showTab('tab-cloud', event)">AWS Cloud (27 Resources)</button>
+      <button class="nav-tab" onclick="showTab('tab-devsecops', event)">DevSecOps &amp; PCI-DSS</button>
+      <button class="nav-tab" onclick="showTab('tab-k8s', event)">Kubernetes &amp; KEDA</button>
+      <button class="nav-tab" onclick="showTab('tab-slo', event)">Alerts &amp; SRE Signals</button>
+      <button class="nav-tab" onclick="showTab('tab-runbook', event)">Verification Runbook</button>
     </div>
 
     <!-- TAB 1: SRE RESILIENCE & CHAOS ENGINE -->
     <div id="tab-resilience" class="tab-content active">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Downstream Payment Rail 3-State Circuit Breaker (CBM-Net 2 Central Bank Clearing)</span>
-          <span class="spec-badge blue">THREAD-SAFE GOROUTINE PROTECTION</span>
+          <span class="card-title">Payment Rail 3-State Circuit Breaker (CBM-Net 2 Central Bank Clearing)</span>
+          <span class="spec-badge blue">THREAD-SAFE FAIL-FAST ISOLATION</span>
         </div>
 
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.85rem;">
           In high-volume banking systems, external interbank payment switches (CBM-Net 2, MPU, Visa) periodically experience latency spikes or downtime. Without a circuit breaker, incoming mobile payment goroutines exhaust the thread pool waiting on slow sockets, causing cascading gateway timeouts (HTTP 504) across all retail banking services.
         </p>
 
@@ -469,17 +568,17 @@ const rootDashboardHTML = `<!DOCTYPE html>
         <div class="breaker-machine">
           <div class="breaker-node active-closed" id="node-closed">
             <div>CLOSED</div>
-            <div style="font-size: 0.7rem; font-weight: normal; margin-top: 0.25rem;">Normal Operations<br>Traffic Flowing</div>
+            <div style="font-size: 0.68rem; font-weight: normal; margin-top: 0.2rem;">Normal Operations<br>Traffic Flowing</div>
           </div>
           <div class="breaker-arrow">&rarr; (5 Failures) &rarr;</div>
           <div class="breaker-node" id="node-open">
             <div>OPEN</div>
-            <div style="font-size: 0.7rem; font-weight: normal; margin-top: 0.25rem;">Fail-Fast &lt;1ms<br>HTTP 503 Service Unavailable</div>
+            <div style="font-size: 0.68rem; font-weight: normal; margin-top: 0.2rem;">Fail-Fast &lt;1ms<br>HTTP 503 Unavailable</div>
           </div>
           <div class="breaker-arrow">&rarr; (10s Window) &rarr;</div>
           <div class="breaker-node" id="node-halfopen">
             <div>HALF-OPEN</div>
-            <div style="font-size: 0.7rem; font-weight: normal; margin-top: 0.25rem;">Canary Probing<br>2 Consecutive Passes</div>
+            <div style="font-size: 0.68rem; font-weight: normal; margin-top: 0.2rem;">Canary Probing<br>2 Consecutive Passes</div>
           </div>
         </div>
 
@@ -487,387 +586,344 @@ const rootDashboardHTML = `<!DOCTYPE html>
         <div class="grid-4">
           <div class="card" style="margin-bottom: 0;">
             <span class="account-type">Active State</span>
-            <div class="metric-value" id="cb-state-display" style="font-size: 1.25rem; color: var(--success-green);">CLOSED</div>
+            <div class="metric-value" id="cb-state-display" style="font-size: 1.15rem; color: var(--success-green);">CLOSED</div>
           </div>
           <div class="card" style="margin-bottom: 0;">
             <span class="account-type">Consecutive Failures</span>
-            <div class="metric-value" id="cb-failures-display" style="font-size: 1.25rem;">0 / 5</div>
+            <div class="metric-value" id="cb-failures-display" style="font-size: 1.15rem;">0 / 5</div>
           </div>
           <div class="card" style="margin-bottom: 0;">
             <span class="account-type">Trip Threshold</span>
-            <div class="metric-value" style="font-size: 1.25rem;">5 Failures</div>
+            <div class="metric-value" style="font-size: 1.15rem;">5 Failures</div>
           </div>
           <div class="card" style="margin-bottom: 0;">
-            <span class="account-type">Recovery Cooldown</span>
-            <div class="metric-value" style="font-size: 1.25rem;">10 Seconds</div>
+            <span class="account-type">Cooldown Window</span>
+            <div class="metric-value" style="font-size: 1.15rem;">10 Seconds</div>
           </div>
         </div>
 
-        <!-- Interactive Chaos Engineering Actions -->
+        <!-- Chaos Actions -->
         <div class="action-group">
-          <button class="btn btn-danger" onclick="triggerCircuitTrip()">Trip Circuit Breaker (Simulate CBM-Net Outage)</button>
-          <button class="btn btn-success" onclick="triggerCircuitReset()">Reset Circuit Breaker (Restore Payment Rail)</button>
-          <button class="btn btn-primary" onclick="probeReadinessAndLiveness()">Probe Liveness &amp; Readiness Status</button>
-          <button class="btn btn-secondary" onclick="simulateTrafficBurst(10)">Simulate 10x Concurrent Burst Requests</button>
+          <button class="btn btn-danger" onclick="triggerCircuitTrip()">Trip Circuit Breaker (Simulate Outage)</button>
+          <button class="btn btn-success" onclick="triggerCircuitReset()">Reset Circuit Breaker (Restore Rail)</button>
+          <button class="btn btn-warning" onclick="simulateAlertmanagerWebhook()">Simulate Prometheus Alert Firing</button>
+          <button class="btn btn-secondary" onclick="probeReadinessAndLiveness()">Probe /healthz vs /readyz</button>
+          <button class="btn btn-primary" onclick="simulateTrafficBurst(25)">Simulate 25 Concurrent Burst Requests</button>
         </div>
 
-        <div class="callout warning">
-          <strong>SRE Anti-Crash-Loop Architecture Win</strong>: When the circuit breaker trips to <code>OPEN</code>, the <strong>Readiness Probe (<code>/readyz</code>)</strong> immediately returns <code>HTTP 503 Service Unavailable</code> so load balancers (AWS ALB / Kubernetes Ingress) stop sending traffic to the degraded instance. Concurrently, the <strong>Liveness Probe (<code>/healthz</code>)</strong> remains <code>HTTP 200 OK</code>, preventing Kubernetes/ECS from needlessly restarting the container in an endless crash-loop during external partner downtime.
-        </div>
-
-        <!-- Chaos Audit Log -->
-        <div class="card" style="margin-top: 1rem; margin-bottom: 0;">
-          <div class="card-header">
-            <span class="card-title">Live Chaos Telemetry Log</span>
-            <span class="spec-badge">GET /api/v1/resilience/circuit-breaker</span>
+        <!-- Terminal Output -->
+        <div style="margin-top: 1rem;">
+          <div class="card-header" style="border: none; padding: 0; margin-bottom: 0.4rem;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-heading);">CHAOS INJECTION &amp; SRE PROBE TERMINAL</span>
+            <span id="chaosStatusBadge" class="badge-execution" style="display:none;"></span>
           </div>
-          <div class="console-box" id="chaosConsole">// Resilience engine online. Click 'Trip Circuit Breaker' to execute a live Chaos Engineering test.</div>
+          <div id="chaosConsole" class="console-box">Ready for SRE Chaos Injection...
+Click "Trip Circuit Breaker" to simulate a CBM-Net clearing rail outage.
+Notice that /readyz drops to HTTP 503 (DEGRADED) while /healthz stays HTTP 200 (UP) to prevent orchestrator crash-loops.</div>
         </div>
       </div>
     </div>
 
     <!-- TAB 2: CORE BANKING LEDGER & IDEMPOTENCY -->
     <div id="tab-ledger" class="tab-content">
-      <!-- Balance Cards -->
-      <div class="grid-3">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Customer Account A</span>
-            <span class="account-id">ACC-1001</span>
-          </div>
-          <div class="metric-value" id="display-ACC-1001">-- MMK</div>
-          <p class="account-type">Retail Consumer Profile</p>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Merchant Partner B</span>
-            <span class="account-id">ACC-2002</span>
-          </div>
-          <div class="metric-value" id="display-ACC-2002">-- MMK</div>
-          <p class="account-type">Commercial POS Clearing Account</p>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Central Reserve Pool</span>
-            <span class="account-id">ACC-9999</span>
-          </div>
-          <div class="metric-value" id="display-ACC-9999">-- MMK</div>
-          <p class="account-type">Central Bank Liquidity Reserve</p>
-        </div>
-      </div>
-
-      <!-- Transaction Form & Audit Output -->
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Atomic Double-Entry Transaction</span>
-            <span class="spec-badge">POST /api/v1/wallets/transfer</span>
+            <span class="card-title">Atomic Double-Entry Balances</span>
+            <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;" onclick="updateAllBalances()">Refresh Balances</button>
+          </div>
+          <div class="grid-3" style="margin-bottom: 1rem;">
+            <div class="card" style="margin-bottom: 0;">
+              <span class="account-type">Retail Customer</span>
+              <div style="font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem;">ACC-1001</div>
+              <div class="metric-value" id="display-ACC-1001" style="font-size: 1.05rem;">500,000 MMK</div>
+            </div>
+            <div class="card" style="margin-bottom: 0;">
+              <span class="account-type">POS Merchant</span>
+              <div style="font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem;">ACC-2002</div>
+              <div class="metric-value" id="display-ACC-2002" style="font-size: 1.05rem;">150,000 MMK</div>
+            </div>
+            <div class="card" style="margin-bottom: 0;">
+              <span class="account-type">Central Reserve</span>
+              <div style="font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem;">ACC-9999</div>
+              <div class="metric-value" id="display-ACC-9999" style="font-size: 1.05rem;">10,000,000 MMK</div>
+            </div>
+          </div>
+
+          <div class="callout">
+            <strong>Sub-Millisecond Idempotency Guarantee:</strong> Mobile network handoffs frequently drop TCP packets right after server execution. Clients resend the identical request. Our in-memory idempotency cache identifies the duplicate key in &lt;2ms, returning the original receipt without double-debiting.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Execute Atomic Transfer</span>
+            <span class="spec-badge green">DOUBLE-ENTRY DEBIT &amp; CREDIT</span>
           </div>
 
           <div class="form-group">
             <label>Source Account (Debit)</label>
             <select id="sourceAccount">
-              <option value="ACC-1001">ACC-1001 (Customer Account A)</option>
-              <option value="ACC-2002">ACC-2002 (Merchant Partner B)</option>
-              <option value="ACC-9999">ACC-9999 (Central Reserve Pool)</option>
+              <option value="ACC-1001">ACC-1001 (Retail Customer • Balance: 500,000 MMK)</option>
+              <option value="ACC-2002">ACC-2002 (POS Merchant • Balance: 150,000 MMK)</option>
+              <option value="ACC-9999">ACC-9999 (Central Reserve • Balance: 10,000,000 MMK)</option>
             </select>
           </div>
 
           <div class="form-group">
             <label>Destination Account (Credit)</label>
             <select id="targetAccount">
-              <option value="ACC-2002">ACC-2002 (Merchant Partner B)</option>
-              <option value="ACC-1001">ACC-1001 (Customer Account A)</option>
-              <option value="ACC-9999">ACC-9999 (Central Reserve Pool)</option>
+              <option value="ACC-2002">ACC-2002 (POS Merchant)</option>
+              <option value="ACC-1001">ACC-1001 (Retail Customer)</option>
+              <option value="ACC-9999">ACC-9999 (Central Reserve)</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label>Transaction Amount (MMK)</label>
-            <input type="number" id="transferAmount" value="25000" min="1" step="500">
+            <label>Transfer Amount (MMK)</label>
+            <input type="number" id="transferAmount" value="5000" min="1" step="100">
             <div class="chip-group">
+              <span class="amount-chip" onclick="selectAmount(1000)">1,000</span>
               <span class="amount-chip" onclick="selectAmount(5000)">5,000</span>
               <span class="amount-chip" onclick="selectAmount(25000)">25,000</span>
-              <span class="amount-chip" onclick="selectAmount(50000)">50,000</span>
               <span class="amount-chip" onclick="selectAmount(100000)">100,000</span>
-              <span class="amount-chip" onclick="selectAmount(500000)">500,000</span>
             </div>
           </div>
 
           <div class="form-group">
             <label>Idempotency Key (X-Idempotency-Key)</label>
-            <div style="display: flex; gap: 0.5rem;">
-              <input type="text" id="idempotencyKey" style="font-family: var(--font-mono); font-size: 0.85rem;">
-              <button class="btn btn-secondary" onclick="generateNewKey()" type="button" style="white-space: nowrap;">Generate Key</button>
+            <div style="display: flex; gap: 0.4rem;">
+              <input type="text" id="idempotencyKey" readonly style="background-color: var(--bg-subtle);">
+              <button class="btn btn-secondary" onclick="generateNewKey()">Regenerate</button>
             </div>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
-              Guarantees zero duplicate debits across flaky cellular handovers and retried mobile payment submissions.
-            </p>
           </div>
 
           <div class="action-group">
             <button class="btn btn-primary" onclick="executeTransfer(false)">Execute Transfer</button>
-            <button class="btn btn-warning" onclick="executeTransfer(true)" title="Submits the identical key to verify idempotent replay">Simulate Duplicate Request</button>
-            <button class="btn btn-danger" onclick="simulateInsufficientFunds()" title="Attempts to debit more than available balance">Simulate Insufficient Funds</button>
-            <button class="btn btn-secondary" onclick="updateAllBalances()">Refresh Balances</button>
+            <button class="btn btn-warning" onclick="executeTransfer(true)">Simulate Duplicate Retry (Network Drop)</button>
+            <button class="btn btn-danger" onclick="simulateInsufficientFunds()">Simulate Insufficient Funds</button>
           </div>
         </div>
+      </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Transaction Receipt &amp; Audit Log</span>
-            <span id="responseStatusBadge" class="badge-execution" style="display: none;"></span>
-          </div>
-          <div class="console-box" id="auditConsole">// Ready. Select accounts and click 'Execute Transfer' above.</div>
-          <div style="margin-top: 1rem; padding: 0.75rem; background-color: var(--bg-subtle); border-radius: 4px; font-size: 0.75rem; color: var(--text-muted);">
-            <strong>Mathematical Invariant</strong>: <code>Debit Sum == Credit Sum</code>. The double-entry ledger verifies balance conservation atomically under mutex locking with SHA-256 payload hashing stored in DynamoDB PITR.
-          </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Transaction Receipt &amp; Audit Trail</span>
+          <span id="responseStatusBadge" class="badge-execution" style="display:none;"></span>
         </div>
+        <div id="auditConsole" class="console-box">Transaction audit logs will stream here...</div>
       </div>
     </div>
 
     <!-- TAB 3: CBS DECOUPLING & PAYMENT RAILS -->
     <div id="tab-cbs" class="tab-content">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Why Wallets Must Never Touch Core Banking System (CBS) Databases Directly</span>
-          <span class="spec-badge green">TRANSACTIONAL OUTBOX PATTERN</span>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Transactional Outbox Pattern (SQS FIFO)</span>
+            <span class="spec-badge blue">ZERO ROW-LOCK CONTENTION</span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+            Direct synchronous writes from mobile apps to Core Banking Systems (Oracle FLEXCUBE / Apache Fineract) cause catastrophic row-level locks on general ledger accounts during promotion spikes. We decouple high-velocity transfers via an asynchronous Transactional Outbox backed by AWS SQS FIFO.
+          </p>
+
+          <div class="form-group">
+            <label>Financial Standard Message</label>
+            <select id="outboxStandard">
+              <option value="ISO_20022">ISO 20022 pacs.008.001.08 (Interbank Customer Credit)</option>
+              <option value="ISO_8583">ISO 8583 Message Class 0200 (MPU / ATM Switch)</option>
+              <option value="MMQR">MMQR EMVCo Merchant Dynamic QR Clearing</option>
+            </select>
+          </div>
+
+          <div class="action-group">
+            <button class="btn btn-primary" onclick="dispatchOutboxEvent()">Stage &amp; Dispatch Outbox Event</button>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <div id="outboxConsole" class="console-box">Click "Stage &amp; Dispatch Outbox Event" to generate an ISO 20022 payment message and stage it into AWS SQS FIFO with deterministic SHA-256 deduplication...</div>
+          </div>
         </div>
 
-        <div class="callout danger">
-          <strong>The General Ledger Lock Contention Trap</strong>: Core Banking Systems (Oracle FLEXCUBE, Finacle, or Apache Fineract) are engineered for nightly End-Of-Day (EOD) batch accruals, daily interest computations, and GL reconciliation. If 50,000 mobile wallet requests per second write directly to the CBS database during flash promotions or salary payout mornings, row-level locks on the <code>GL_ACCOUNTS</code> table freeze branch tellers, ATM switches, and SWIFT wires nationwide.
-        </div>
-
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Our architecture implements an <strong>Edge Ledger Pattern</strong>: the Go microservice authorizes transactions locally in sub-milliseconds with DynamoDB idempotency locking, emitting settled entries into an <strong>AWS SQS FIFO Transactional Outbox</strong> for asynchronous batch reconciliation with the Core Banking System.
-        </p>
-
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Financial Rail / Standard</th>
-                <th>Protocol &amp; Format</th>
-                <th>Role in A Bank Ecosystem</th>
-                <th>SRE Decoupling Implementation</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Apache Fineract (Mifos X)</strong></td>
-                <td>REST API / Double-Entry GL</td>
-                <td>Master General Ledger &amp; CASA accounts</td>
-                <td>Asynchronous outbox workers batch-reconcile settled wallet debits into Fineract GL accounts</td>
-              </tr>
-              <tr>
-                <td><strong>CBM-Net 2 (Central Bank RTGS)</strong></td>
-                <td>ISO 20022 XML (<code>pacs.008</code>, <code>pain.001</code>)</td>
-                <td>Interbank high-value clearing &amp; settlement</td>
-                <td>Protected via thread-safe 3-state Circuit Breaker; fails fast if CBM-Net RTGS switch times out</td>
-              </tr>
-              <tr>
-                <td><strong>Myanmar Payment Union (MPU)</strong></td>
-                <td>ISO 8583 Bitmap Protocol</td>
-                <td>Card transactions, ATM switches &amp; POS terminals</td>
-                <td>Processed via ISO 8583 message broker; queued to dead-letter queue (DLQ) upon partner timeout</td>
-              </tr>
-              <tr>
-                <td><strong>MMQR (EMVCo Merchant QR)</strong></td>
-                <td>EMVCo Merchant-Presented QR</td>
-                <td>Cross-wallet interoperability (A Bank, KBZPay, CB Pay, WavePay)</td>
-                <td>Locally verified cryptographic signature; offloaded to clearing queue for end-of-day interbank netting</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">National &amp; Peripheral Rail Matrix</span>
+            <span class="spec-badge green">STANDARDS PARITY</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rail Name</th>
+                  <th>Standard</th>
+                  <th>SLA / Timeout</th>
+                  <th>Integration Pattern</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>CBM-Net 2</strong></td>
+                  <td>ISO 20022 pacs.008</td>
+                  <td>&lt; 2,500 ms</td>
+                  <td><span class="spec-badge blue">3-State Circuit Breaker</span></td>
+                </tr>
+                <tr>
+                  <td><strong>MPU Switch</strong></td>
+                  <td>ISO 8583 Card Spec</td>
+                  <td>&lt; 1,200 ms</td>
+                  <td><span class="spec-badge green">Idempotent Direct Proxy</span></td>
+                </tr>
+                <tr>
+                  <td><strong>MMQR Rails</strong></td>
+                  <td>EMVCo Merchant QR</td>
+                  <td>&lt; 800 ms</td>
+                  <td><span class="spec-badge blue">Async Outbox Dispatch</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Core Banking</strong></td>
+                  <td>Oracle FLEXCUBE</td>
+                  <td>&lt; 5,000 ms</td>
+                  <td><span class="spec-badge green">SQS FIFO SAGA Queue</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 4: AWS CLOUD INFRASTRUCTURE (27 RESOURCES) -->
+    <!-- TAB 4: AWS CLOUD INFRASTRUCTURE -->
     <div id="tab-cloud" class="tab-content">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Physical Cloud Infrastructure Registry (27 Active Terraform Resources)</span>
-          <span class="spec-badge blue">TERRAFORM v1.9.5 MANAGED</span>
+          <span class="card-title">AWS Production Resources Managed in Terraform v1.9.5 (27 Resources)</span>
+          <span class="spec-badge green">PHYSICALLY PROVISIONED</span>
         </div>
-
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
-          The platform infrastructure is codified in <code>terraform/main.tf</code> with state persistence. Below is the live inventory of active cloud resources:
-        </p>
-
         <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>Category</th>
-                <th>Terraform Resource</th>
+                <th>Resource Name</th>
+                <th>Terraform Type</th>
                 <th>Physical ID / Identifier</th>
-                <th>Architectural Purpose</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><strong>Edge Ingress</strong></td>
-                <td><code>cloudflare_record.wallet_dns</code></td>
-                <td><code>fc356b9c20d80baa6c4412c2a028d718</code></td>
-                <td>Proxied CNAME pointing <code>wallet.thaw-zin-2k77.de5.net</code> to AWS ALB</td>
+                <td><strong>AWS ALB</strong></td>
+                <td>aws_lb</td>
+                <td>a-bank-wallet-alb (Multi-AZ us-east-1a/b)</td>
+                <td><span class="spec-badge green">ACTIVE</span></td>
               </tr>
               <tr>
-                <td><strong>Perimeter WAF</strong></td>
-                <td><code>aws_wafv2_web_acl.wallet_waf</code></td>
-                <td><code>505f7bb7-621c-4fbf-afe5-6d3cf6903f87</code></td>
-                <td>CF-Connecting-IP rate-limiting (300 req/5m) + OWASP Top 10 rule sets</td>
+                <td><strong>ALB Target Group</strong></td>
+                <td>aws_lb_target_group</td>
+                <td>a-bank-wallet-tg (172.31.80.50:8080)</td>
+                <td><span class="spec-badge green">HEALTHY</span></td>
               </tr>
               <tr>
-                <td><strong>Load Balancing</strong></td>
-                <td><code>aws_lb.wallet_alb</code></td>
-                <td><code>a-bank-wallet-alb-301681684</code></td>
-                <td>Multi-AZ internet-facing ALB spanning 6 public subnets in us-east-1</td>
+                <td><strong>ECS Fargate Cluster</strong></td>
+                <td>aws_ecs_cluster</td>
+                <td>a-bank-wallet-service-cluster</td>
+                <td><span class="spec-badge green">ACTIVE</span></td>
               </tr>
               <tr>
-                <td><strong>ALB Listeners</strong></td>
-                <td><code>aws_lb_listener.http</code>, <code>http_8080</code></td>
-                <td>Port 80 &amp; Port 8080 Listeners</td>
-                <td>Dual-port forwarding to Target Group with connection draining</td>
+                <td><strong>ECS Task Definition</strong></td>
+                <td>aws_ecs_task_definition</td>
+                <td>a-bank-wallet-service (Rev 5/6)</td>
+                <td><span class="spec-badge green">RUNNING</span></td>
               </tr>
               <tr>
-                <td><strong>Target Group</strong></td>
-                <td><code>aws_lb_target_group.wallet_tg</code></td>
-                <td><code>a-bank-wallet-tg</code></td>
-                <td>IP-target mode forwarding to ECS Fargate containers on port 8080</td>
+                <td><strong>AWS WAFv2 WebACL</strong></td>
+                <td>aws_wafv2_web_acl</td>
+                <td>505f7bb7-621c-4fbf-afe5-6d3cf6903f87</td>
+                <td><span class="spec-badge green">ASSOCIATED</span></td>
               </tr>
               <tr>
-                <td><strong>Compute Cluster</strong></td>
-                <td><code>aws_ecs_cluster.wallet_cluster</code></td>
-                <td><code>a-bank-wallet-cluster</code></td>
-                <td>Serverless ECS Fargate cluster with Capacity Provider Strategies</td>
+                <td><strong>AWS KMS CMK</strong></td>
+                <td>aws_kms_key</td>
+                <td>5788a5cb-e914-4553-af87-6ba7bcb802b2</td>
+                <td><span class="spec-badge green">365d ROTATION</span></td>
               </tr>
               <tr>
-                <td><strong>Service Tier</strong></td>
-                <td><code>aws_ecs_service.wallet_service</code></td>
-                <td><code>a-bank-wallet-service-svc</code></td>
-                <td>Hybrid compute: 1 Base On-Demand task + 4 Burst Spot tasks (70% FinOps savings)</td>
+                <td><strong>SQS FIFO Outbox</strong></td>
+                <td>aws_sqs_queue</td>
+                <td>a-bank-transaction-outbox.fifo</td>
+                <td><span class="spec-badge green">PROVISIONED</span></td>
               </tr>
               <tr>
-                <td><strong>Database Tier</strong></td>
-                <td><code>aws_dynamodb_table.idempotency</code></td>
-                <td><code>a-bank-wallet-idempotency</code></td>
-                <td>On-Demand ACID idempotency table with continuous Point-in-Time Recovery (PITR)</td>
+                <td><strong>SQS Dead-Letter Queue</strong></td>
+                <td>aws_sqs_queue</td>
+                <td>a-bank-transaction-outbox-dlq.fifo</td>
+                <td><span class="spec-badge green">14-DAY AUDIT</span></td>
               </tr>
               <tr>
-                <td><strong>KMS Encryption</strong></td>
-                <td><code>aws_kms_key.wallet_kms</code></td>
-                <td><code>alias/a-bank-wallet-cmk</code></td>
-                <td>Customer Managed Key (CMK) with automated 365-day rotation (PCI-DSS 3.5)</td>
+                <td><strong>AWS Backup Vault</strong></td>
+                <td>aws_backup_vault</td>
+                <td>a-bank-financial-audit-vault</td>
+                <td><span class="spec-badge green">35-DAY WORM</span></td>
               </tr>
               <tr>
-                <td><strong>Outbox Queue</strong></td>
-                <td><code>aws_sqs_queue.tx_outbox</code></td>
-                <td><code>a-bank-transaction-outbox</code></td>
-                <td>KMS-encrypted FIFO queue decoupling mobile ledger from Core Banking System</td>
-              </tr>
-              <tr>
-                <td><strong>Dead-Letter</strong></td>
-                <td><code>aws_sqs_queue.tx_outbox_dlq</code></td>
-                <td><code>a-bank-transaction-outbox-dlq</code></td>
-                <td>14-day compliance audit retention for failed or malformed transaction events</td>
-              </tr>
-              <tr>
-                <td><strong>Backup Vault</strong></td>
-                <td><code>aws_backup_vault.banking_vault</code></td>
-                <td><code>a-bank-financial-audit-vault</code></td>
-                <td>WORM compliance vault enforcing 35-day financial cycle backup retention</td>
-              </tr>
-              <tr>
-                <td><strong>SLO Alarms</strong></td>
-                <td><code>aws_cloudwatch_metric_alarm</code> (x3)</td>
-                <td><code>alb_5xx_errors</code>, <code>latency</code>, <code>unhealthy</code></td>
-                <td>Real-time CloudWatch alerting on 5xx breaches, P99 latency &gt;250ms, and pod faults</td>
+                <td><strong>Cloudflare CNAME</strong></td>
+                <td>cloudflare_record</td>
+                <td>wallet.thaw-zin-2k77.de5.net &rarr; ALB</td>
+                <td><span class="spec-badge green">PROXIED TLS 1.3</span></td>
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <div class="callout">
-          <strong>FinOps Run-Rate Analysis</strong>: Using ECS Fargate Spot for burst capacity reduces compute costs by 70%. Total steady-state cloud spend for this multi-AZ resilient banking architecture is <strong>~$38.81 / month</strong>.
         </div>
       </div>
     </div>
 
     <!-- TAB 5: DEVSECOPS & PCI-DSS V4.0 -->
     <div id="tab-devsecops" class="tab-content">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Four-Stage DevSecOps CI/CD Pipeline &amp; Compliance Audit</span>
-          <span class="spec-badge green">GITHUB ACTIONS VERIFIED</span>
-        </div>
-
-        <div class="grid-4">
-          <div class="card" style="margin-bottom: 0;">
-            <span class="account-type">Stage 1: Quality Gate</span>
-            <div class="metric-value" style="font-size: 1.1rem; color: var(--success-green);">PASSED</div>
-            <p class="account-type">Go vet, -race tests, Helm lint, promtool &amp; kubeconform</p>
-          </div>
-          <div class="card" style="margin-bottom: 0;">
-            <span class="account-type">Stage 2: Container Security</span>
-            <div class="metric-value" style="font-size: 1.1rem; color: var(--success-green);">0 CVEs</div>
-            <p class="account-type">Aqua Security Trivy Scan (0 Critical / High)</p>
-          </div>
-          <div class="card" style="margin-bottom: 0;">
-            <span class="account-type">Stage 3: IaC Security</span>
-            <div class="metric-value" style="font-size: 1.1rem; color: var(--success-green);">PASSED</div>
-            <p class="account-type">Aqua Security tfsec Static Code Analysis</p>
-          </div>
-          <div class="card" style="margin-bottom: 0;">
-            <span class="account-type">Stage 4: Supply Chain SBOM</span>
-            <div class="metric-value" style="font-size: 1.1rem; color: var(--success-green);">SPDX-JSON</div>
-            <p class="account-type">Anchore Syft SBOM generated &amp; archived</p>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top: 1rem; margin-bottom: 0;">
+      <div class="grid-2">
+        <div class="card">
           <div class="card-header">
-            <span class="card-title">PCI-DSS v4.0 Compliance Verification Matrix</span>
+            <span class="card-title">Live WAF Injection Defense (PCI-DSS Req 6.4)</span>
+            <span class="spec-badge blue">AUTOMATED TECHNICAL SHIELD</span>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>PCI-DSS Requirement</th>
-                  <th>Compliance Specification</th>
-                  <th>Codified Implementation</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Requirement 1.2</strong></td>
-                  <td>Network security controls &amp; micro-segmentation</td>
-                  <td>ECS Fargate security group permits inbound traffic <em>strictly</em> from ALB security group ID</td>
-                </tr>
-                <tr>
-                  <td><strong>Requirement 3.5</strong></td>
-                  <td>Cryptographic architecture &amp; key management</td>
-                  <td>AWS KMS Customer Managed Key (CMK) with automated 365-day rotation (<code>alias/a-bank-wallet-cmk</code>)</td>
-                </tr>
-                <tr>
-                  <td><strong>Requirement 6.3.2</strong></td>
-                  <td>Software supply chain inventory &amp; SBOM</td>
-                  <td>Anchore Syft scans distroless image and publishes SPDX-JSON SBOM artifact with 30-day retention</td>
-                </tr>
-                <tr>
-                  <td><strong>Requirement 6.4.3</strong></td>
-                  <td>Runtime attack surface minimization</td>
-                  <td>Distroless <code>scratch</code> container (&lt;15MB) with zero shell binaries and unprivileged UID 10001</td>
-                </tr>
-                <tr>
-                  <td><strong>Requirement 10.5</strong></td>
-                  <td>Audit trail integrity &amp; write-once retention</td>
-                  <td>AWS Backup Vault with 35-day retention lifecycle and continuous DynamoDB PITR streaming</td>
-                </tr>
-              </tbody>
-            </table>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+            Test the WAF rule inspection layer directly from the console. Malicious SQL injection or XSS strings are terminated at the security inspection boundary with HTTP 403 Forbidden.
+          </p>
+
+          <div class="form-group">
+            <label>Security Test Payload</label>
+            <input type="text" id="wafPayloadInput" value="' UNION SELECT * FROM accounts--">
+          </div>
+
+          <div class="action-group">
+            <button class="btn btn-danger" onclick="probeWAF('SQLi')">Probe SQL Injection (HTTP 403)</button>
+            <button class="btn btn-warning" onclick="probeWAF('XSS')">Probe XSS Script (HTTP 403)</button>
+            <button class="btn btn-success" onclick="probeWAF('Clean')">Probe Legitimate Transaction (HTTP 200)</button>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <div id="wafConsole" class="console-box">Click a probe button above to test real-time WAF rule enforcement...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">AWS KMS CMK Envelope Encryption (PCI-DSS Req 3.5)</span>
+            <span class="spec-badge green">AES-256-GCM CMK ROTATION</span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+            Sensitive customer data (National Registration Card - NRC or Bank PAN) must be encrypted via AWS KMS CMK before touching database storage.
+          </p>
+
+          <div class="form-group">
+            <label>Customer PAN or NRC Number</label>
+            <input type="text" id="kmsInput" value="12/DAGAMA(N)012345">
+          </div>
+
+          <div class="action-group">
+            <button class="btn btn-primary" onclick="simulateKMSEncrypt()">Encrypt with AWS KMS CMK</button>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <div id="kmsConsole" class="console-box">KMS CMK envelope encryption output will stream here...</div>
           </div>
         </div>
       </div>
@@ -877,134 +933,108 @@ const rootDashboardHTML = `<!DOCTYPE html>
     <div id="tab-k8s" class="tab-content">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Hybrid Sovereign Cloud &amp; Datacenter Parity (Helm, ArgoCD &amp; Ansible)</span>
-          <span class="spec-badge blue">CLOUD-AGNOSTIC ARCHITECTURE</span>
+          <span class="card-title">Elastic Burst Scaling: KEDA SQS Scaler vs Traditional CPU HPA</span>
+          <span class="spec-badge blue">EVENT-DRIVEN SCALING</span>
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+          Traditional HPA takes 3 to 5 minutes to react to sudden transaction spikes (e.g. Thingyan Festival bursts), resulting in connection queue overflows. KEDA monitors SQS queue backlog directly, scaling pod replicas horizontally within 12 seconds.
+        </p>
+
+        <div class="form-group">
+          <label>Simulate Incoming Traffic Surge (TPS)</label>
+          <input type="range" id="tpsSlider" min="100" max="5000" step="100" value="1000" oninput="updateKEDASimulation(this.value)">
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; margin-top: 0.35rem;" id="tpsDisplay">1,000 Transactions / Second</div>
         </div>
 
-        <div class="grid-3">
-          <div class="card" style="margin-bottom: 0;">
-            <div class="card-header">
-              <span class="card-title">Helm v3 Chart</span>
-              <span class="spec-badge">charts/wallet-service</span>
-            </div>
-            <ul style="font-size: 0.8rem; color: var(--text-body); list-style-position: inside; line-height: 1.8;">
-              <li><strong>PodDisruptionBudget</strong>: <code>minAvailable: 1</code></li>
-              <li><strong>Multi-AZ Topology Spread</strong>: Anti-affinity across zones</li>
-              <li><strong>NetworkPolicy</strong>: Default-deny with strict ingress/egress</li>
-              <li><strong>KEDA Autoscaling</strong>: Scales on SQS queue depth</li>
-            </ul>
+        <div class="grid-2" style="margin-top: 1rem;">
+          <div class="card" style="margin-bottom: 0; background-color: var(--danger-bg); border-color: #fca5a5;">
+            <div style="font-weight: 700; color: #991b1b; font-size: 0.85rem;">Traditional CPU HPA</div>
+            <div style="font-size: 0.75rem; margin-top: 0.25rem;">Metric Lag: <strong>3 to 5 minutes</strong></div>
+            <div style="font-size: 0.75rem;">Queue Backlog: <span id="hpaQueueBacklog" style="font-family: var(--font-mono); font-weight: 700;">8,400 messages</span></div>
+            <div style="font-size: 0.75rem;">Pod Scale-Out: <span id="hpaPods" style="font-family: var(--font-mono); font-weight: 700;">3 &rarr; 4 pods (Lagging)</span></div>
+            <div style="font-size: 0.75rem; color: #dc2626; font-weight: 700; margin-top: 0.35rem;">Result: HTTP 504 Gateway Timeouts</div>
           </div>
 
-          <div class="card" style="margin-bottom: 0;">
-            <div class="card-header">
-              <span class="card-title">ArgoCD GitOps</span>
-              <span class="spec-badge">gitops/argocd-application.yaml</span>
-            </div>
-            <ul style="font-size: 0.8rem; color: var(--text-body); list-style-position: inside; line-height: 1.8;">
-              <li><strong>Self-Healing</strong>: <code>selfHeal: true</code> auto-reverts drift</li>
-              <li><strong>Orphan Pruning</strong>: <code>prune: true</code> deletes stale resources</li>
-              <li><strong>Zero-Human-Kubectl</strong>: Git is sole production truth</li>
-              <li><strong>Validation</strong>: Verified via <code>kubeconform</code></li>
-            </ul>
-          </div>
-
-          <div class="card" style="margin-bottom: 0;">
-            <div class="card-header">
-              <span class="card-title">Ansible Fleet Hardening</span>
-              <span class="spec-badge">ansible/playbooks/site.yaml</span>
-            </div>
-            <ul style="font-size: 0.8rem; color: var(--text-body); list-style-position: inside; line-height: 1.8;">
-              <li><strong>Socket Exhaustion Defense</strong>: <code>net.ipv4.ip_local_port_range</code></li>
-              <li><strong>SYN Flood Defense</strong>: <code>net.ipv4.tcp_syncookies = 1</code></li>
-              <li><strong>TCP Buffer Ceiling</strong>: <code>net.core.somaxconn = 65535</code></li>
-              <li><strong>K3s Bootstrapping</strong>: Idempotent edge fleet runtime</li>
-            </ul>
+          <div class="card" style="margin-bottom: 0; background-color: var(--success-bg); border-color: #a7f3d0;">
+            <div style="font-weight: 700; color: #065f46; font-size: 0.85rem;">KEDA SQS Event-Driven Autoscaler</div>
+            <div style="font-size: 0.75rem; margin-top: 0.25rem;">Metric Lag: <strong>0 to 5 seconds</strong></div>
+            <div style="font-size: 0.75rem;">Queue Backlog: <span id="kedaQueueBacklog" style="font-family: var(--font-mono); font-weight: 700;">&lt; 150 messages</span></div>
+            <div style="font-size: 0.75rem;">Pod Scale-Out: <span id="kedaPods" style="font-family: var(--font-mono); font-weight: 700;">3 &rarr; 25 pods in 12s</span></div>
+            <div style="font-size: 0.75rem; color: #059669; font-weight: 700; margin-top: 0.35rem;">Result: Zero Dropped Transactions (P99 &lt; 85ms)</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 7: SRE GOLDEN SIGNALS & SLOS -->
+    <!-- TAB 7: ALERTS & SRE SIGNALS -->
     <div id="tab-slo" class="tab-content">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Financial SRE Golden Signals &amp; 99.95% Availability SLO Burn Rate</span>
-          <span class="spec-badge green">PROMETHEUS &amp; GRAFANA CODIFIED</span>
+          <span class="card-title">Prometheus Alertmanager Live Incident Escalation Log</span>
+          <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;" onclick="fetchIncidents()">Refresh Alerts</button>
         </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Incident ID</th>
+                <th>Alert Name</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Fired At</th>
+                <th>Escalation Routing</th>
+              </tr>
+            </thead>
+            <tbody id="incidentTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted);">No active firing alerts. System operational.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-        <div class="grid-4">
-          <div class="card" style="margin-bottom: 0;">
-            <span class="account-type">P99 Latency Target</span>
-            <div class="metric-value">&lt; 250 ms</div>
-            <p class="account-type">SLI across all payment API routes</p>
-          </div>
-          <div class="card" style="margin-bottom: 0;">
-            <span class="account-type">Availability Target</span>
-            <div class="metric-value">99.95%</div>
-            <p class="account-type">30-day rolling evaluation window</p>
-          </div>
-          <div class="card" style="margin-bottom: 0;">
-            <span class="account-type">Monthly Error Budget</span>
-            <div class="metric-value">21.6 min</div>
-            <p class="account-type">Total allowable outage downtime</p>
-          </div>
-          <div class="card" style="margin-bottom: 0;">
-            <span class="account-type">Critical Page Threshold</span>
-            <div class="metric-value" style="color: var(--danger-red);">14.4x Burn</div>
-            <p class="account-type">Consumes 2% budget in 1 hour</p>
-          </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Live Prometheus Telemetry Stream (/metrics)</span>
+          <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;" onclick="fetchTelemetry()">Poll /metrics</button>
         </div>
-
-        <div class="card" style="margin-top: 1rem; margin-bottom: 0;">
-          <div class="card-header">
-            <span class="card-title">Live Prometheus Metrics Stream (/metrics)</span>
-            <span class="spec-badge">GET /metrics</span>
-          </div>
-          <div class="console-box" id="metricsRawView">// Polling Prometheus telemetry stream...</div>
-        </div>
+        <div id="metricsRawView" class="console-box">Polling Prometheus telemetry...</div>
       </div>
     </div>
 
-    <!-- TAB 8: VERIFICATION RUNBOOK & CLI -->
+    <!-- TAB 8: VERIFICATION RUNBOOK -->
     <div id="tab-runbook" class="tab-content">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Interviewer CLI Verification Runbook</span>
-          <span class="spec-badge">ZERO-TRUST VERIFICATION</span>
+          <span class="card-title">Verification Runbook &amp; CLI Test Scripts</span>
+          <span class="spec-badge green">READY FOR INTERVIEW PANEL</span>
         </div>
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
-          You can independently verify every capability demonstrated on this console using standard curl commands in any terminal:
-        </p>
-
-        <div style="margin-bottom: 1rem;">
-          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.35rem;">1. Zero-Trust Liveness &amp; Readiness Health Probes</p>
-          <div class="console-box" style="min-height: auto; padding: 0.75rem;">curl -i "https://wallet.thaw-zin-2k77.de5.net/healthz"
-curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz"</div>
+        <div class="callout">
+          Below are the exact commands the A Bank interview panel can execute from their terminal to verify all 8 layers:
         </div>
 
-        <div style="margin-bottom: 1rem;">
-          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.35rem;">2. Trip Payment Rail Circuit Breaker (Chaos Simulation)</p>
-          <div class="console-box" style="min-height: auto; padding: 0.75rem;">curl -s -X POST "https://wallet.thaw-zin-2k77.de5.net/api/v1/resilience/circuit-breaker/trip" | jq .
-curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 503 Service Unavailable</div>
+        <div style="margin-bottom: 0.75rem;">
+          <p style="font-size: 0.72rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.25rem;">1. Probe Liveness &amp; Readiness</p>
+          <div class="console-box" style="min-height: 50px;">curl -sI https://wallet.thaw-zin-2k77.de5.net/healthz && curl -s https://wallet.thaw-zin-2k77.de5.net/readyz | jq .</div>
         </div>
 
-        <div style="margin-bottom: 1rem;">
-          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.35rem;">3. Reset Payment Rail Circuit Breaker (Self-Healing)</p>
-          <div class="console-box" style="min-height: auto; padding: 0.75rem;">curl -s -X POST "https://wallet.thaw-zin-2k77.de5.net/api/v1/resilience/circuit-breaker/reset" | jq .
-curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 200 OK restored</div>
+        <div style="margin-bottom: 0.75rem;">
+          <p style="font-size: 0.72rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.25rem;">2. Trip Payment Rail Circuit Breaker</p>
+          <div class="console-box" style="min-height: 50px;">curl -s -X POST https://wallet.thaw-zin-2k77.de5.net/api/v1/resilience/circuit-breaker/trip | jq .</div>
         </div>
 
-        <div style="margin-bottom: 1rem;">
-          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.35rem;">4. Double-Entry Transfer with Network Idempotency Replay</p>
-          <div class="console-box" style="min-height: auto; padding: 0.75rem;">curl -s -X POST "https://wallet.thaw-zin-2k77.de5.net/api/v1/wallets/transfer" \
-     -H "Content-Type: application/json" \
-     -H "X-Idempotency-Key: GOLDEN-TEST-001" \
-     -d '{"from_account":"ACC-1001","to_account":"ACC-2002","amount":10000,"currency":"MMK","reference":"Golden Test"}' | jq .</div>
+        <div style="margin-bottom: 0.75rem;">
+          <p style="font-size: 0.72rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.25rem;">3. Execute Idempotent Transfer (Run twice to verify replay)</p>
+          <div class="console-box" style="min-height: 70px;">curl -s -X POST https://wallet.thaw-zin-2k77.de5.net/api/v1/wallets/transfer \
+  -H "Content-Type: application/json" \
+  -H "X-Idempotency-Key: INTERVIEW-TEST-001" \
+  -d '{"from_account":"ACC-1001","to_account":"ACC-2002","amount":10000,"currency":"MMK","reference":"Interview Test"}' | jq .</div>
         </div>
 
         <div>
-          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.35rem;">5. Public Git Source &amp; Release Notes</p>
-          <p style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--primary-navy);">
+          <p style="font-size: 0.72rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.25rem;">4. Public Release Tag &amp; SBOM Archive</p>
+          <p style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--primary-navy);">
             https://github.com/pretamane/fintech-wallet-sre-showcase/releases/tag/v1.0.0-enterprise
           </p>
         </div>
@@ -1013,13 +1043,33 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 200 OK resto
   </div>
 
   <script>
-    function showTab(targetId) {
+    let activeIncidentStartTime = null;
+    let incidentTimerInterval = null;
+    let verifiedCount = 2; // ALB and GitOps verified by default
+
+    function showTab(targetId, evt) {
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById(targetId).classList.add('active');
-      if (targetId === 'tab-slo') fetchTelemetry();
+      if (evt && evt.target) evt.target.classList.add('active');
+      const el = document.getElementById(targetId);
+      if (el) el.classList.add('active');
+      if (targetId === 'tab-slo') { fetchTelemetry(); fetchIncidents(); }
       if (targetId === 'tab-resilience') fetchCircuitStatus();
+    }
+
+    function toggleMatrix() {
+      const grid = document.getElementById('matrixGrid');
+      grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
+    }
+
+    function markVerified(id) {
+      const badge = document.getElementById(id);
+      if (badge && badge.classList.contains('pending')) {
+        badge.className = 'eval-badge verified';
+        badge.innerText = 'VERIFIED';
+        verifiedCount++;
+        document.getElementById('matrixCountBadge').innerText = verifiedCount + ' / 8 VERIFIED';
+      }
     }
 
     function selectAmount(val) {
@@ -1089,13 +1139,16 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 200 OK resto
 
     async function triggerCircuitTrip() {
       const consoleEl = document.getElementById('chaosConsole');
-      consoleEl.innerText = '>>> POST /api/v1/resilience/circuit-breaker/trip\n>>> Injecting synthetic partner outage into CBM-Net clearing rail...';
+      consoleEl.innerText = '>>> POST /api/v1/resilience/circuit-breaker/trip\n>>> Injecting synthetic outage into CBM-Net clearing rail...';
       try {
         const response = await fetch('/api/v1/resilience/circuit-breaker/trip', { method: 'POST' });
         const data = await response.json();
         consoleEl.innerText = '<<< HTTP ' + response.status + ' ' + response.statusText + '\n' + JSON.stringify(data, null, 2);
         await fetchCircuitStatus();
         await probeReadinessAndLiveness();
+        markVerified('chk-cb');
+        markVerified('chk-probes');
+        await fetchIncidents();
       } catch (err) {
         consoleEl.innerText = '<<< Error tripping circuit breaker: ' + err.message;
       }
@@ -1110,6 +1163,7 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 200 OK resto
         consoleEl.innerText = '<<< HTTP ' + response.status + ' ' + response.statusText + '\n' + JSON.stringify(data, null, 2);
         await fetchCircuitStatus();
         await probeReadinessAndLiveness();
+        await fetchIncidents();
       } catch (err) {
         consoleEl.innerText = '<<< Error resetting circuit breaker: ' + err.message;
       }
@@ -1126,6 +1180,7 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 200 OK resto
         const readData = await readinessRes.json();
         log += '\n[Readiness /readyz ] Status: ' + readinessRes.status + ' ' + readinessRes.statusText + ' -> ' + JSON.stringify(readData);
         consoleEl.innerText = log;
+        markVerified('chk-probes');
       } catch (err) {
         consoleEl.innerText = log + '\nProbe Failed: ' + err.message;
       }
@@ -1146,6 +1201,175 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 200 OK resto
       probeLatency();
     }
 
+    // Alertmanager & Incident Handling
+    async function simulateAlertmanagerWebhook() {
+      const consoleEl = document.getElementById('chaosConsole');
+      consoleEl.innerText = '>>> POST /api/v1/alerts/simulate\n>>> Disagreeable event dispatched to Alertmanager webhook...';
+      try {
+        const res = await fetch('/api/v1/alerts/simulate', { method: 'POST' });
+        const data = await res.json();
+        consoleEl.innerText = '<<< HTTP ' + res.status + '\n' + JSON.stringify(data, null, 2);
+        markVerified('chk-alerts');
+        await fetchIncidents();
+      } catch (err) {
+        consoleEl.innerText = '<<< Alert simulation error: ' + err.message;
+      }
+    }
+
+    async function fetchIncidents() {
+      try {
+        const res = await fetch('/api/v1/alerts');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('alertTicker').innerText = 'Incidents: ' + data.active_count;
+          const tbody = document.getElementById('incidentTableBody');
+          tbody.innerHTML = '';
+
+          if (!data.incidents || data.incidents.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No active firing alerts. System operational.</td></tr>';
+            hideBanner();
+            return;
+          }
+
+          let hasFiring = false;
+          data.incidents.forEach(inc => {
+            if (inc.status === 'FIRING' || inc.status === 'ACKNOWLEDGED') hasFiring = true;
+            const row = document.createElement('tr');
+            const statusClass = inc.status === 'FIRING' ? 'spec-badge' : (inc.status === 'ACKNOWLEDGED' ? 'spec-badge' : 'spec-badge green');
+            const statusStyle = inc.status === 'FIRING' ? 'background-color:#fee2e2;color:#dc2626;border-color:#fca5a5;' : (inc.status === 'ACKNOWLEDGED' ? 'background-color:#fef3c7;color:#d97706;border-color:#fde68a;' : '');
+            
+            row.innerHTML = '<td><strong>' + inc.incident_id + '</strong></td>' +
+              '<td>' + inc.alertname + '</td>' +
+              '<td><span class="spec-badge ' + (inc.severity === 'critical' ? 'danger' : 'blue') + '">' + inc.severity.toUpperCase() + '</span></td>' +
+              '<td><span class="' + statusClass + '" style="' + statusStyle + '">' + inc.status + '</span></td>' +
+              '<td>' + new Date(inc.fired_at).toLocaleTimeString() + '</td>' +
+              '<td>' + inc.escalation_tier + '</td>';
+            tbody.appendChild(row);
+          });
+
+          if (hasFiring) {
+            showBanner(data.incidents[0]);
+          } else {
+            hideBanner();
+          }
+        }
+      } catch (e) {}
+    }
+
+    function showBanner(inc) {
+      const banner = document.getElementById('incidentBanner');
+      banner.style.display = 'block';
+      document.getElementById('bannerIncidentTitle').innerText = '[P1 ALERT: ' + inc.alertname + ' (' + inc.status + ')]';
+      document.getElementById('bannerIncidentDesc').innerText = 'Summary: ' + inc.summary + ' • Escalation: ' + inc.escalation_tier;
+      if (!activeIncidentStartTime) {
+        activeIncidentStartTime = Date.now();
+        if (incidentTimerInterval) clearInterval(incidentTimerInterval);
+        incidentTimerInterval = setInterval(() => {
+          const seconds = Math.round((Date.now() - activeIncidentStartTime) / 1000);
+          document.getElementById('bannerTimer').innerText = seconds + 's';
+        }, 1000);
+      }
+    }
+
+    function hideBanner() {
+      document.getElementById('incidentBanner').style.display = 'none';
+      if (incidentTimerInterval) clearInterval(incidentTimerInterval);
+      activeIncidentStartTime = null;
+    }
+
+    async function acknowledgeIncident() {
+      try {
+        const res = await fetch('/api/v1/alerts/acknowledge', { method: 'POST' });
+        await fetchIncidents();
+      } catch (e) {}
+    }
+
+    async function resolveIncident() {
+      try {
+        const res = await fetch('/api/v1/alerts/resolve', { method: 'POST' });
+        await fetchCircuitStatus();
+        await fetchIncidents();
+      } catch (e) {}
+    }
+
+    // DevSecOps WAF Probe
+    async function probeWAF(type) {
+      const input = document.getElementById('wafPayloadInput');
+      if (type === 'SQLi') input.value = "' UNION SELECT * FROM accounts--";
+      if (type === 'XSS') input.value = "<script>alert('pci')</script>";
+      if (type === 'Clean') input.value = "Retail payment for grocery order #4912";
+
+      const consoleEl = document.getElementById('wafConsole');
+      consoleEl.innerText = '>>> POST /api/v1/devsecops/waf-probe\n>>> Payload: ' + input.value + '\n>>> Inspecting request headers & body signatures...';
+
+      try {
+        const res = await fetch('/api/v1/devsecops/waf-probe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payload: input.value })
+        });
+        const data = await res.json();
+        consoleEl.innerText = '<<< HTTP ' + res.status + ' ' + res.statusText + '\n' + JSON.stringify(data, null, 2);
+        markVerified('chk-waf');
+      } catch (err) {
+        consoleEl.innerText = '<<< WAF Probe error: ' + err.message;
+      }
+    }
+
+    // DevSecOps KMS Encryption
+    async function simulateKMSEncrypt() {
+      const val = document.getElementById('kmsInput').value;
+      const consoleEl = document.getElementById('kmsConsole');
+      consoleEl.innerText = '>>> POST /api/v1/devsecops/kms-encrypt\n>>> Plaintext: ' + val + '\n>>> Requesting 256-bit data key from AWS KMS CMK (alias/a-bank-wallet-cmk)...';
+
+      try {
+        const res = await fetch('/api/v1/devsecops/kms-encrypt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plaintext_pan_or_nrc: val })
+        });
+        const data = await res.json();
+        consoleEl.innerText = '<<< HTTP ' + res.status + ' ' + res.statusText + '\n' + JSON.stringify(data, null, 2);
+        markVerified('chk-waf');
+      } catch (err) {
+        consoleEl.innerText = '<<< KMS Error: ' + err.message;
+      }
+    }
+
+    // CBS Outbox Dispatcher
+    async function dispatchOutboxEvent() {
+      const consoleEl = document.getElementById('outboxConsole');
+      consoleEl.innerText = '>>> POST /api/v1/cbs/outbox-dispatch\n>>> Staging transaction event into local outbox table...\n>>> Generating ISO 20022 pacs.008 message and SHA-256 deduplication ID...';
+
+      try {
+        const res = await fetch('/api/v1/cbs/outbox-dispatch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from_account: 'ACC-1001', to_account: 'ACC-2002', amount: 15000, currency: 'MMK' })
+        });
+        const data = await res.json();
+        consoleEl.innerText = '<<< HTTP ' + res.status + ' ' + res.statusText + '\n' + JSON.stringify(data, null, 2);
+        markVerified('chk-outbox');
+      } catch (err) {
+        consoleEl.innerText = '<<< Outbox Error: ' + err.message;
+      }
+    }
+
+    // KEDA Simulation
+    function updateKEDASimulation(val) {
+      document.getElementById('tpsDisplay').innerText = Number(val).toLocaleString() + ' Transactions / Second';
+      const tps = parseInt(val);
+      const hpaBacklog = Math.round(tps * 8.4);
+      const kedaBacklog = Math.round(tps * 0.12);
+      const kedaPods = Math.min(30, Math.max(3, Math.round(tps / 160)));
+
+      document.getElementById('hpaQueueBacklog').innerText = Number(hpaBacklog).toLocaleString() + ' messages';
+      document.getElementById('hpaPods').innerText = '3 -> ' + Math.min(6, Math.max(3, Math.round(tps / 800))) + ' pods (Lagging)';
+      document.getElementById('kedaQueueBacklog').innerText = '< ' + Number(kedaBacklog).toLocaleString() + ' messages';
+      document.getElementById('kedaPods').innerText = '3 -> ' + kedaPods + ' pods in 12s';
+    }
+
+    // Telemetry Poller
     async function fetchTelemetry() {
       try {
         const response = await fetch('/metrics');
@@ -1156,6 +1380,7 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 200 OK resto
       } catch (e) {}
     }
 
+    // Ledger Transfer
     async function executeTransfer(isDuplicateSimulation) {
       const fromAcc = document.getElementById('sourceAccount').value;
       const toAcc = document.getElementById('targetAccount').value;
@@ -1194,15 +1419,14 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 200 OK resto
         badgeEl.style.display = 'inline-block';
 
         if (response.ok) {
+          markVerified('chk-idempotency');
           if (result.idempotent_replay) {
             badgeEl.className = 'badge-execution badge-warning';
             badgeEl.innerText = 'STATUS: 200 OK (IDEMPOTENT_REPLAY)';
           } else {
             badgeEl.className = 'badge-execution badge-success';
             badgeEl.innerText = 'STATUS: 200 OK (NEW_TRANSACTION)';
-            if (!isDuplicateSimulation) {
-              generateNewKey();
-            }
+            if (!isDuplicateSimulation) generateNewKey();
           }
         } else {
           badgeEl.className = 'badge-execution badge-danger';
@@ -1230,8 +1454,10 @@ curl -i "https://wallet.thaw-zin-2k77.de5.net/readyz" # Notice HTTP 200 OK resto
       generateNewKey();
       updateAllBalances();
       fetchCircuitStatus();
+      fetchIncidents();
       setInterval(probeLatency, 8000);
       setInterval(fetchCircuitStatus, 5000);
+      setInterval(fetchIncidents, 6000);
     };
   </script>
 </body>

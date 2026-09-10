@@ -175,3 +175,78 @@ func TestCircuitBreakerRecovery(t *testing.T) {
 		t.Fatalf("Expected circuit to recover to CLOSED, got %s", cb.State())
 	}
 }
+
+func TestAlertStoreLifecycle(t *testing.T) {
+	store := NewAlertStore()
+
+	alert := AlertItem{
+		Status: "firing",
+		Labels: map[string]string{
+			"alertname": "CBMNetPaymentRailDegraded",
+			"severity":  "critical",
+		},
+		Annotations: map[string]string{
+			"summary": "Clearing socket timeout",
+		},
+		StartsAt: time.Now().UTC(),
+	}
+
+	rec := store.RecordAlert(alert)
+	if rec.Status != "FIRING" {
+		t.Fatalf("Expected status FIRING, got %s", rec.Status)
+	}
+
+	incidents := store.GetIncidents()
+	if len(incidents) != 1 {
+		t.Fatalf("Expected 1 incident, got %d", len(incidents))
+	}
+
+	// Acknowledge
+	ack, err := store.AcknowledgeLatest(rec.IncidentID)
+	if err != nil {
+		t.Fatalf("Failed to acknowledge: %v", err)
+	}
+	if ack.Status != "ACKNOWLEDGED" || ack.AcknowledgedAt == nil {
+		t.Fatalf("Expected ACKNOWLEDGED with timestamp, got %s", ack.Status)
+	}
+
+	// Resolve
+	res, err := store.ResolveLatest(rec.IncidentID)
+	if err != nil {
+		t.Fatalf("Failed to resolve: %v", err)
+	}
+	if res.Status != "RESOLVED" || res.ResolvedAt == nil {
+		t.Fatalf("Expected RESOLVED with timestamp, got %s", res.Status)
+	}
+}
+
+func TestWAFProbeDetection(t *testing.T) {
+	maliciousSQLi := []string{
+		"' UNION SELECT * FROM accounts--",
+		"1; DROP TABLE accounts;",
+		"admin' OR 1=1--",
+	}
+
+	for _, payload := range maliciousSQLi {
+		if !sqliRegex.MatchString(payload) {
+			t.Errorf("Expected SQLi pattern match for '%s'", payload)
+		}
+	}
+
+	maliciousXSS := []string{
+		"<script>alert(1)</script>",
+		"<img src=x onerror=alert('pci')>",
+		"javascript:stealTokens()",
+	}
+
+	for _, payload := range maliciousXSS {
+		if !xssRegex.MatchString(payload) {
+			t.Errorf("Expected XSS pattern match for '%s'", payload)
+		}
+	}
+
+	cleanPayload := "Retail Payment for Groceries"
+	if sqliRegex.MatchString(cleanPayload) || xssRegex.MatchString(cleanPayload) {
+		t.Errorf("Clean payload falsely flagged as threat: '%s'", cleanPayload)
+	}
+}
