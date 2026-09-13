@@ -45,3 +45,7 @@ tfplan
 # Private Infrastructure VPN Controllers
 scripts/*-vpn.sh
 !scripts/*-vpn.sh.example
+
+# Runtime logs and process state
+*.log
+*.pid

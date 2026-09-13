@@ -18,25 +18,25 @@ import (
 
 // ScenarioResult captures statistical metrics for an executed load test
 type ScenarioResult struct {
-	Name            string            `json:"name"`
-	TargetURL       string            `json:"target_url"`
-	TotalRequests   int               `json:"total_requests"`
-	Concurrency     int               `json:"concurrency"`
-	DurationMs      int64             `json:"duration_ms"`
-	ThroughputRPS   float64           `json:"throughput_rps"`
-	StatusCodes     map[int]int       `json:"status_codes"`
-	SuccessRate     float64           `json:"success_rate"`
-	LatenciesMs     []float64         `json:"-"`
-	MinLatencyMs    float64           `json:"min_latency_ms"`
-	MeanLatencyMs   float64           `json:"mean_latency_ms"`
-	MedianLatencyMs float64           `json:"median_latency_ms"`
-	P90LatencyMs    float64           `json:"p90_latency_ms"`
-	P95LatencyMs    float64           `json:"p95_latency_ms"`
-	P99LatencyMs    float64           `json:"p99_latency_ms"`
-	MaxLatencyMs    float64           `json:"max_latency_ms"`
-	InvariantPassed bool              `json:"invariant_passed"`
-	InvariantNotes  string            `json:"invariant_notes"`
-	Errors          []string          `json:"errors,omitempty"`
+	Name            string      `json:"name"`
+	TargetURL       string      `json:"target_url"`
+	TotalRequests   int         `json:"total_requests"`
+	Concurrency     int         `json:"concurrency"`
+	DurationMs      int64       `json:"duration_ms"`
+	ThroughputRPS   float64     `json:"throughput_rps"`
+	StatusCodes     map[int]int `json:"status_codes"`
+	SuccessRate     float64     `json:"success_rate"`
+	LatenciesMs     []float64   `json:"-"`
+	MinLatencyMs    float64     `json:"min_latency_ms"`
+	MeanLatencyMs   float64     `json:"mean_latency_ms"`
+	MedianLatencyMs float64     `json:"median_latency_ms"`
+	P90LatencyMs    float64     `json:"p90_latency_ms"`
+	P95LatencyMs    float64     `json:"p95_latency_ms"`
+	P99LatencyMs    float64     `json:"p99_latency_ms"`
+	MaxLatencyMs    float64     `json:"max_latency_ms"`
+	InvariantPassed bool        `json:"invariant_passed"`
+	InvariantNotes  string      `json:"invariant_notes"`
+	Errors          []string    `json:"errors,omitempty"`
 }
 
 type Config struct {
@@ -419,7 +419,7 @@ func runWAFStress(client *http.Client, cfg Config) ScenarioResult {
 
 	res := runWorkerPool(cfg.Requests, cfg.Concurrency, func(idx int) (int, time.Duration, error) {
 		// Alternate between SQLi attack and clean payload
-		isAttack := (idx % 2 == 0)
+		isAttack := (idx%2 == 0)
 		payload := map[string]string{}
 		if isAttack {
 			payload["payload"] = "' OR '1'='1' --"
