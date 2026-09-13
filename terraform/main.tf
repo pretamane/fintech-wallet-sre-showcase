@@ -374,7 +374,7 @@ resource "aws_ecs_service" "wallet_service" {
   deployment_minimum_healthy_percent = 100
 
   lifecycle {
-    ignore_changes = [task_definition]
+    ignore_changes = [task_definition, desired_count]
   }
 
   depends_on = [aws_lb_listener.http]
@@ -702,5 +702,109 @@ resource "aws_backup_plan" "dynamodb_plan" {
     }
   }
 }
+
+# ------------------------------------------------------------------------------
+# 15. AWS ECS Fargate Event-Driven Autoscaling (SQS Transaction Backlog Step Scaling)
+# ------------------------------------------------------------------------------
+resource "aws_appautoscaling_target" "ecs_target" {
+  max_capacity       = 10
+  min_capacity       = 2
+  resource_id        = "service/${aws_ecs_cluster.wallet_cluster.name}/${aws_ecs_service.wallet_service.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+# Scale-Out Policy: Burst +2 workers when transaction queue depth exceeds 30
+resource "aws_appautoscaling_policy" "sqs_scale_out" {
+  name               = "${var.service_name}-sqs-scale-out"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = 60
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 2
+    }
+  }
+}
+
+# Scale-In Policy: Gracefully step down -1 worker when queue backlog clears
+resource "aws_appautoscaling_policy" "sqs_scale_in" {
+  name               = "${var.service_name}-sqs-scale-in"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = 300
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_upper_bound = 0
+      scaling_adjustment          = -1
+    }
+  }
+}
+
+# CloudWatch Alarm: High SQS Backlog -> Trigger Scale-Out
+resource "aws_cloudwatch_metric_alarm" "sqs_backlog_high" {
+  alarm_name          = "${var.service_name}-sqs-backlog-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  namespace           = "AWS/SQS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 30
+  alarm_description   = "Triggered when SQS transaction backlog exceeds 30 pending messages"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    QueueName = aws_sqs_queue.tx_outbox.name
+  }
+
+  alarm_actions = [aws_appautoscaling_policy.sqs_scale_out.arn]
+
+  tags = {
+    Severity  = "Warning"
+    Component = "EventDrivenAutoscaling"
+    SLO       = "ZeroQueueBacklog"
+  }
+}
+
+# CloudWatch Alarm: Low SQS Backlog -> Trigger Scale-In
+resource "aws_cloudwatch_metric_alarm" "sqs_backlog_low" {
+  alarm_name          = "${var.service_name}-sqs-backlog-low"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = 3
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  namespace           = "AWS/SQS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 5
+  alarm_description   = "Triggered when SQS transaction backlog remains <= 5 messages for 3 consecutive minutes"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    QueueName = aws_sqs_queue.tx_outbox.name
+  }
+
+  alarm_actions = [aws_appautoscaling_policy.sqs_scale_in.arn]
+
+  tags = {
+    Severity  = "Info"
+    Component = "EventDrivenAutoscaling"
+    SLO       = "FinOpsCostControl"
+  }
+}
+
 
 
