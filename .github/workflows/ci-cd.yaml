@@ -193,3 +193,46 @@ jobs:
           cluster: a-bank-wallet-cluster
           wait-for-service-stability: true
 
+      # ========================================================================
+      # SRE Telemetry: Instant Telegram Mobile Notification
+      # ========================================================================
+      - name: Send Telegram Deployment Alert
+        if: always()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          STATUS="${{ job.status }}"
+          COMMIT_MSG=$(git log -1 --pretty=%B | head -n 1)
+          AUTHOR="${{ github.actor }}"
+          SHA="${{ github.sha }}"
+          SHORT_SHA="${SHA:0:7}"
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          
+          if [ "$STATUS" = "success" ]; then
+            TITLE="A-BANK CI/CD DEPLOYMENT SUCCESS"
+          else
+            TITLE="A-BANK CI/CD DEPLOYMENT FAILED"
+          fi
+
+          TEXT="<b>[${TITLE}]</b>
+          ━━━━━━━━━━━━━━━━━━━━
+          <b>Status</b>: <code>${STATUS}</code>
+          <b>Commit</b>: <code>${SHORT_SHA}</code> - ${COMMIT_MSG}
+          <b>Author</b>: <code>${AUTHOR}</code>
+          <b>Branch</b>: <code>${BRANCH}</code>
+          <b>Repository</b>: <code>${REPO}</code>
+
+          <b>Production Endpoints</b>:
+          • Customer API: https://wallet-userdirect-prod-aws.thaw-zin-2k77.de5.net/healthz
+          • SRE Prober: https://wallet-backprobe-prod-aws.thaw-zin-2k77.de5.net/healthz
+          • On-Prem Staging: https://wallet-stg-onprem.thaw-zin-2k77.de5.net/healthz
+          • ArgoCD GitOps: https://k3s-argocd-onprem.thaw-zin-2k77.de5.net"
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "parse_mode=HTML" \
+            -d "text=${TEXT}" > /dev/null
+
+

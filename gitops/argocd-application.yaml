@@ -39,14 +39,15 @@ spec:
       - CreateNamespace=true
       - ApplyOutOfSyncOnly=true
       - RespectIgnoreDifferences=true
-  ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      jsonPointers:
-        - /spec/replicas
     retry:
       limit: 5
       backoff:
         duration: 5s
         factor: 2
         maxDuration: 3m
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+
