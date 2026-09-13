@@ -13,14 +13,13 @@ terraform {
   }
 
   # Production SRE Remote State Backend (S3 + DynamoDB Locking)
-  # Uncomment and configure with your organization's backend bucket:
-  # backend "s3" {
-  #   bucket         = "a-bank-sre-terraform-state-464868388812"
-  #   key            = "mobile-wallet/production/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   dynamodb_table = "a-bank-terraform-locks"
-  #   encrypt        = true
-  # }
+  backend "s3" {
+    bucket         = "a-bank-wallet-tfstate-464868388812"
+    key            = "fintech-wallet/production/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "a-bank-wallet-tfstate-locks"
+    encrypt        = true
+  }
 }
 
 provider "aws" {

@@ -165,3 +165,31 @@ jobs:
           name: a-bank-compliance-sbom-${{ github.sha }}
           path: a-bank-wallet-sbom.spdx.json
           retention-days: 30
+
+      # ========================================================================
+      # Continuous Deployment: Automated AWS ECS Fargate Rolling Deployment
+      # ========================================================================
+      - name: Download Active Task Definition from AWS ECS
+        run: |
+          echo "Fetching active Amazon ECS Task Definition for ${{ env.ECR_REPOSITORY }}..."
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECR_REPOSITORY }} \
+            --region ${{ env.AWS_REGION }} \
+            --query taskDefinition | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' > task-definition.json
+
+      - name: Render Amazon ECS Task Definition with New Image Tag
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: wallet-service
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Deploy Amazon ECS Task Definition (Instant Zero-Downtime Rollout)
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: a-bank-wallet-service-svc
+          cluster: a-bank-wallet-cluster
+          wait-for-service-stability: true
+

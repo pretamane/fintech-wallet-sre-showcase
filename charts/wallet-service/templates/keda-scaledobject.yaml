@@ -27,11 +27,39 @@ spec:
         scaleDown:
           stabilizationWindowSeconds: 300 # 5-minute cooloff to prevent flapping
   triggers:
-    # 1. AWS SQS Transaction Ingestion Queue Trigger
+    {{- if eq .Values.keda.triggerType "redis" }}
+    # 1. Local Event-Driven Transaction Queue Trigger (Redis List)
+    - type: redis
+      metadata:
+        address: {{ printf "%s-redis:6379" .Release.Name | quote }}
+        listName: {{ .Values.keda.redis.listName | default "transactions:incoming" | quote }}
+        listLength: {{ .Values.keda.redis.listLength | default "30" | quote }}
+    {{- else if eq .Values.keda.triggerType "redis-streams" }}
+    # 2. Local Event-Driven Transaction Stream Trigger (Redis Streams)
+    - type: redis-streams
+      metadata:
+        address: {{ printf "%s-redis:6379" .Release.Name | quote }}
+        stream: {{ .Values.keda.redis.stream | default "transactions:stream" | quote }}
+        consumerGroup: {{ .Values.keda.redis.consumerGroup | default "wallet-processors" | quote }}
+        pendingEntriesCount: {{ .Values.keda.redis.pendingEntriesCount | default "30" | quote }}
+    {{- else if eq .Values.keda.triggerType "prometheus" }}
+    # 3. HTTP Request Rate (RPS) Metric via Prometheus
+    - type: prometheus
+      metadata:
+        serverAddress: {{ .Values.keda.prometheus.serverAddress | quote }}
+        metricName: http_requests_per_second
+        query: {{ .Values.keda.prometheus.query | quote }}
+        threshold: {{ .Values.keda.prometheus.threshold | quote }}
+    {{- else }}
+    # 4. AWS SQS Transaction Ingestion Queue Trigger (Cloud Production)
     - type: aws-sqs-queue
       metadata:
         queueURL: {{ .Values.keda.sqsQueueURL | quote }}
         queueLength: {{ .Values.keda.targetQueueLength | default "30" | quote }}
         awsRegion: {{ .Values.keda.awsRegion | default "us-east-1" | quote }}
-        identityOwner: operator
+      {{- if .Values.keda.authenticationRef }}
+      authenticationRef:
+        name: {{ .Values.keda.authenticationRef | quote }}
+      {{- end }}
+    {{- end }}
 {{- end }}

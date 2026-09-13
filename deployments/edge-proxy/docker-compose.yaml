@@ -1,0 +1,22 @@
+version: "3.8"
+
+# ==============================================================================
+# A-Bank Edge Direct Ingress Proxy
+# Host: MySpaceVM (123.253.22.149)
+# Purpose: Direct-to-origin token-authenticated reverse proxy to K3s ClusterIP
+# Bypasses blocked Cloudflare Anycast IPs for verified clients/webhooks
+# ==============================================================================
+
+services:
+  origin-proxy:
+    image: nginx:alpine
+    container_name: abank-cf-proxy
+    restart: always
+    network_mode: host
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- --header=\"X-Origin-Verify: 21e3ef85801229aec805134e348b0c6522e51213afcdf718\" http://127.0.0.1:8088/healthz || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 3

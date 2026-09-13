@@ -278,6 +278,19 @@ resource "aws_lb_listener" "http_8080" {
   }
 }
 
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.wallet_alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = "arn:aws:acm:us-east-1:464868388812:certificate/2352df7f-698c-40bc-b8fb-8f2808c59704"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.wallet_tg.arn
+  }
+}
+
 # ------------------------------------------------------------------------------
 # 7. ECS Task Definition (Distroless Scratch Runtime - Zero Shell)
 # ------------------------------------------------------------------------------
@@ -360,21 +373,81 @@ resource "aws_ecs_service" "wallet_service" {
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
 
+  lifecycle {
+    ignore_changes = [task_definition]
+  }
+
   depends_on = [aws_lb_listener.http]
 }
 
 # ------------------------------------------------------------------------------
 # 9. Cloudflare DNS & Edge Decoupling (Permanent Static CNAME)
 # ------------------------------------------------------------------------------
-# CNAME Record pointing to AWS ALB DNS Name (Zero-Breakage on Task Restarts)
+# Customer Direct Public API (Unproxied AWS Direct IP - Zero VPN Access)
+resource "cloudflare_record" "wallet_userdirect_prod_aws" {
+  zone_id = var.cloudflare_zone_id
+  name    = "wallet-userdirect-prod-aws"
+  content = aws_lb.wallet_alb.dns_name
+  type    = "CNAME"
+  proxied = false
+  comment = "Customer Direct Public API (Unproxied AWS Direct IP - Zero VPN Access)"
+  ttl     = 60
+}
+
+# SRE Diagnostic & Synthetic Probing Endpoint (Direct CNAME to AWS ALB)
+resource "cloudflare_record" "wallet_backprobe_prod_aws" {
+  zone_id = var.cloudflare_zone_id
+  name    = "wallet-backprobe-prod-aws"
+  content = aws_lb.wallet_alb.dns_name
+  type    = "CNAME"
+  proxied = false
+  comment = "SRE Diagnostic & Synthetic Probing Endpoint (Direct CNAME to AWS ALB)"
+  ttl     = 60
+}
+
+# AWS Production Wallet API (Direct CNAME to AWS ALB - Unproxied for Myanmar No-VPN Access)
+resource "cloudflare_record" "wallet_prod_aws" {
+  zone_id = var.cloudflare_zone_id
+  name    = "wallet-prod-aws"
+  content = aws_lb.wallet_alb.dns_name
+  type    = "CNAME"
+  proxied = false
+  comment = "Managed by Terraform: Direct CNAME to AWS ALB (Unproxied for Myanmar No-VPN Access)"
+  ttl     = 60
+}
+
+# Legacy wallet alias pointing to AWS ALB (Unproxied for Direct HTTPS access)
 resource "cloudflare_record" "wallet_dns" {
   zone_id = var.cloudflare_zone_id
   name    = "wallet"
   content = aws_lb.wallet_alb.dns_name
   type    = "CNAME"
-  proxied = true
-  comment = "Managed by Terraform: Decoupled CNAME to AWS Application Load Balancer"
-  ttl     = 1
+  proxied = false
+  comment = "Managed by Terraform: Direct CNAME to AWS ALB (Unproxied for Myanmar No-VPN Access)"
+  ttl     = 60
+}
+
+
+# On-Prem Staging Wallet (Direct A-Record to MySpaceVM 123.253.22.149 for Myanmar Domestic No-VPN)
+resource "cloudflare_record" "wallet_stg_onprem" {
+  zone_id = var.cloudflare_zone_id
+  name    = "wallet-stg-onprem"
+  content = "123.253.22.149"
+  type    = "A"
+  proxied = false
+  comment = "Managed by Terraform: Direct A-record to On-Prem MySpaceVM (Myanmar Domestic No-VPN)"
+  ttl     = 60
+}
+
+# On-Prem ArgoCD Control Plane (Direct A-Record to MySpaceVM 123.253.22.149 for Myanmar Domestic No-VPN)
+resource "cloudflare_record" "k3s_argocd_onprem" {
+  zone_id = var.cloudflare_zone_id
+  name    = "k3s-argocd-onprem"
+  content = "123.253.22.149"
+  type    = "A"
+  proxied = false
+  comment = "Managed by Terraform: Direct A-record to On-Prem ArgoCD (Myanmar Domestic No-VPN)"
+  ttl     = 60
 }
 
 # ------------------------------------------------------------------------------
