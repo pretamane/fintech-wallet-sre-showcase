@@ -138,13 +138,16 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "Building Docker container for AWS ECR..."
+          VERSION=$(grep '^appVersion:' charts/wallet-service/Chart.yaml | awk '{print $2}' | tr -d '"')
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION
           
           echo "Pushing image to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "Pushed successfully: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION
+          echo "Pushed successfully: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG (and $VERSION, latest)"
 
       # ========================================================================
       # Supply Chain Security: Software Bill of Materials (PCI-DSS Req 6.3.2)

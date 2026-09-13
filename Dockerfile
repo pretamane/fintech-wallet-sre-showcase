@@ -21,7 +21,7 @@ COPY . .
 # Compile static binary with zero CGO and stripped debugging symbols
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -trimpath \
-    -ldflags="-s -w -X main.version=1.0.0" \
+    -ldflags="-s -w -X main.version=1.0.1" \
     -o /app/wallet-service ./cmd/wallet-service
 
 # Create non-root unprivileged user and group

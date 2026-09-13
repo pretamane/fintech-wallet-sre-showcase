@@ -611,7 +611,7 @@ func (app *Application) handleHealthz(w http.ResponseWriter, r *http.Request) {
 	app.writeJSON(w, http.StatusOK, map[string]string{
 		"status":  "UP",
 		"service": "a-bank-wallet-service",
-		"version": "1.0.0",
+		"version": "1.0.1",
 	})
 }
 
@@ -957,7 +957,7 @@ func (app *Application) handleRoot(w http.ResponseWriter, r *http.Request) {
 				"readiness":          "GET /readyz",
 				"metrics":            "GET /metrics",
 			},
-			"version": "1.0.0",
+			"version": "1.0.1",
 		})
 		return
 	}

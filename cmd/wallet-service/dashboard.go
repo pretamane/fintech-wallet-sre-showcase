@@ -475,6 +475,7 @@ const rootDashboardHTML = `<!DOCTYPE html>
         </div>
       </div>
       <div class="system-status">
+        <span class="status-tag" id="gitopsBadge" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;font-weight:700;">GITOPS v1.0.1 LIVE</span>
         <span class="status-tag" id="clusterStatusBadge"><span class="status-indicator" id="statusDot"></span> CLUSTER ACTIVE</span>
         <span class="ticker-tag" id="latencyTicker">Latency: -- ms</span>
         <span class="ticker-tag" id="circuitTicker">Rail: CLOSED</span>

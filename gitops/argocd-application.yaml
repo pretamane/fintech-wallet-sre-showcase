@@ -25,7 +25,7 @@ spec:
         - values.yaml
       parameters:
         - name: image.tag
-          value: "1.0.0"
+          value: "1.0.1"
         - name: replicaCount
           value: "3"
   destination:
