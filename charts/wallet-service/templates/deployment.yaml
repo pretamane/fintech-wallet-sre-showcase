@@ -35,6 +35,10 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ if .Values.serviceAccount.create }}{{ .Release.Name }}-wallet-sa{{ else }}{{ .Values.serviceAccount.name }}{{ end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
