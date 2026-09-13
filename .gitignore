@@ -41,3 +41,7 @@ crash.log
 .aws/
 *.tfplan
 tfplan
+
+# Private Infrastructure VPN Controllers
+scripts/*-vpn.sh
+!scripts/*-vpn.sh.example

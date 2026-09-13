@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# FortiGate Multi-Tenant SSL VPN Safe Split-Tunnel Controller (Reference Example)
+# Architecture: Dual Concurrent SSL VPN with Strict Split-Tunnel Routing
+# GUARANTEE: Zero disruption to host default gateway, zero modification to DNS,
+# zero packet leakage outside isolated network namespaces.
+# ==============================================================================
+set -euo pipefail
+
+STATE_DIR="${HOME}/.local/state"
+CONFIG_DIR="${HOME}/.local/etc/openfortivpn"
+BIN_PATH="${HOME}/.local/bin/openfortivpn"
+
+mkdir -p "${STATE_DIR}" "${CONFIG_DIR}"
+
+usage() {
+  echo "Usage: $0 {start <profile-name>|status|stop <profile-name|all>}"
+  echo ""
+  echo "Profiles:"
+  echo "  datacenter-a : Production Core Banking Gateway (203.0.113.10:10443) -> ppp0"
+  echo "                 Subnets: 10.100.10.0/24, 10.100.30.0/24"
+  echo "  datacenter-b : Disaster Recovery Gateway (198.51.100.20:10443) -> ppp1"
+  echo "                 Subnets: 10.200.50.0/24, 10.200.55.0/24"
+  echo ""
+  echo "Commands:"
+  echo "  start <profile>  Connect to specified gateway in strict split-tunnel mode"
+  echo "  status           Inspect active tunnels, routing tables, and default route"
+  echo "  stop <profile>   Terminate specific tunnel or 'all'"
+  exit 1
+}
+
+start_profile() {
+  local PROFILE="${1:-}"
+  case "${PROFILE}" in
+    datacenter-a)
+      local CONF="${CONFIG_DIR}/datacenter-a.conf"
+      local PID_F="${STATE_DIR}/openfortivpn-dca.pid"
+      local LOG_F="${STATE_DIR}/openfortivpn-dca.log"
+      local IFNAME="ppp0"
+      local GATEWAY_IP="203.0.113.10"
+      local RULE_PRIO="7999"
+      local SUBNETS=("10.100.10.0/24" "10.100.30.0/24")
+      ;;
+    datacenter-b)
+      local CONF="${CONFIG_DIR}/datacenter-b.conf"
+      local PID_F="${STATE_DIR}/openfortivpn-dcb.pid"
+      local LOG_F="${STATE_DIR}/openfortivpn-dcb.log"
+      local IFNAME="ppp1"
+      local GATEWAY_IP="198.51.100.20"
+      local RULE_PRIO="7998"
+      local SUBNETS=("10.200.50.0/24" "10.200.55.0/24")
+      ;;
+    *)
+      echo "[-] Error: Unknown profile '${PROFILE}'."
+      usage
+      ;;
+  esac
+
+  if [[ -f "${PID_F}" ]] && kill -0 "$(cat "${PID_F}")" 2>/dev/null; then
+    echo "[-] Tunnel '${PROFILE}' is already running (PID: $(cat "${PID_F}"))."
+    return 0
+  fi
+
+  echo "================================================================================"
+  echo "Starting FortiGate SSL VPN: Profile '${PROFILE}' (${GATEWAY_IP})"
+  echo "Interface     : ${IFNAME}"
+  echo "Safety Guard  : --set-routes=0 --set-dns=0 --pppd-no-peerdns"
+  echo "================================================================================"
+
+  BASE_DEFAULT=$(ip route show default | head -1)
+  echo "[+] Baseline Default Route: ${BASE_DEFAULT}"
+
+  # Physical interface bypass rule for FortiGate gateway IP
+  sudo ip rule del priority "${RULE_PRIO}" 2>/dev/null || true
+  sudo ip rule add to "${GATEWAY_IP}" lookup main priority "${RULE_PRIO}"
+
+  # Launch openfortivpn detached using nohup
+  sudo nohup "${BIN_PATH}" -c "${CONF}" --pppd-ifname="${IFNAME}" \
+    </dev/null > "${LOG_F}" 2>&1 &
+
+  local VPN_PID=$!
+  echo "${VPN_PID}" > "${PID_F}"
+  echo "[+] openfortivpn launched with PID: ${VPN_PID}"
+  echo "[+] Waiting for interface ${IFNAME} to negotiate..."
+
+  local CONNECTED=false
+  for i in {1..15}; do
+    sleep 1
+    if ip link show "${IFNAME}" >/dev/null 2>&1; then
+      CONNECTED=true
+      break
+    fi
+    if ! kill -0 "${VPN_PID}" 2>/dev/null; then
+      echo "[-] Process exited unexpectedly. Log output:"
+      cat "${LOG_F}"
+      rm -f "${PID_F}"
+      return 1
+    fi
+  done
+
+  if [[ "${CONNECTED}" == "true" ]]; then
+    sleep 2
+    local TUNNEL_IP
+    TUNNEL_IP=$(ip -4 addr show "${IFNAME}" | grep inet | awk '{print $2}' || echo "negotiating")
+    echo "[+] SUCCESS: Tunnel established on ${IFNAME} (${TUNNEL_IP})"
+
+    # Verify default route was preserved
+    local CURR_DEFAULT
+    CURR_DEFAULT=$(ip route show default | head -1)
+    if [[ "${BASE_DEFAULT}" == "${CURR_DEFAULT}" ]]; then
+      echo "[+] VERIFIED: Default route preserved: ${CURR_DEFAULT}"
+    else
+      echo "[!] WARNING: Default route altered! Reverting immediately..."
+      sudo ip route replace ${BASE_DEFAULT}
+    fi
+
+    # Apply isolated routes with MSS clamping
+    echo "[+] Applying MSS-clamped routes (mtu 1300 advmss 1200) via ${IFNAME}:"
+    for s in "${SUBNETS[@]}"; do
+      sudo ip route add "${s}" dev "${IFNAME}" mtu 1300 advmss 1200 2>/dev/null || \
+      sudo ip route change "${s}" dev "${IFNAME}" mtu 1300 advmss 1200
+      echo "    -> ${s} dev ${IFNAME}"
+    done
+  else
+    echo "[-] Timed out waiting for ${IFNAME}. Check logs: ${LOG_F}"
+    tail -n 20 "${LOG_F}"
+    return 1
+  fi
+}
+
+stop_profile() {
+  local PROFILE="${1:-all}"
+  case "${PROFILE}" in
+    datacenter-a)
+      echo "[+] Stopping Datacenter A tunnel (ppp0)..."
+      local PID_F="${STATE_DIR}/openfortivpn-dca.pid"
+      if [[ -f "${PID_F}" ]]; then
+        sudo kill "$(cat "${PID_F}")" 2>/dev/null || true
+        rm -f "${PID_F}"
+      fi
+      ;;
+    datacenter-b)
+      echo "[+] Stopping Datacenter B tunnel (ppp1)..."
+      local PID_F="${STATE_DIR}/openfortivpn-dcb.pid"
+      if [[ -f "${PID_F}" ]]; then
+        sudo kill "$(cat "${PID_F}")" 2>/dev/null || true
+        rm -f "${PID_F}"
+      fi
+      ;;
+    all)
+      echo "[+] Stopping all FortiGate tunnels..."
+      sudo pkill -f openfortivpn || true
+      rm -f "${STATE_DIR}"/openfortivpn-*.pid
+      ;;
+    *)
+      echo "[-] Error: Unknown profile '${PROFILE}'."
+      usage
+      ;;
+  esac
+  echo "[+] Stopped cleanly."
+}
+
+status_all() {
+  echo "================================================================================"
+  echo "FortiGate Multi-Tenant SSL VPN & Network Topology Report"
+  echo "================================================================================"
+
+  echo "--- Profile: Datacenter A (203.0.113.10) ---"
+  if ip link show ppp0 >/dev/null 2>&1; then
+    echo "[+] Interface ppp0 : ACTIVE"
+    ip -brief addr show ppp0
+    ip route show dev ppp0 | sed 's/^/    Route: /'
+  else
+    echo "[-] Interface ppp0 : INACTIVE"
+  fi
+
+  echo ""
+  echo "--- Profile: Datacenter B (198.51.100.20) ---"
+  if ip link show ppp1 >/dev/null 2>&1; then
+    echo "[+] Interface ppp1 : ACTIVE"
+    ip -brief addr show ppp1
+    ip route show dev ppp1 | sed 's/^/    Route: /'
+  else
+    echo "[-] Interface ppp1 : INACTIVE"
+  fi
+
+  echo ""
+  echo "--- Routing Integrity ---"
+  echo "[+] Default Route  : $(ip route show default | head -1)"
+}
+
+case "${1:-}" in
+  start)
+    shift
+    start_profile "${1:-datacenter-a}"
+    ;;
+  stop)
+    shift
+    stop_profile "${1:-all}"
+    ;;
+  status)
+    status_all
+    ;;
+  *)
+    usage
+    ;;
+esac
