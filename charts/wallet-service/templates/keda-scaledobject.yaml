@@ -31,14 +31,14 @@ spec:
     # 1. Local Event-Driven Transaction Queue Trigger (Redis List)
     - type: redis
       metadata:
-        address: {{ printf "%s-redis:6379" .Release.Name | quote }}
+        address: {{ printf "%s-redis.%s.svc.cluster.local:6379" .Release.Name .Release.Namespace | quote }}
         listName: {{ .Values.keda.redis.listName | default "transactions:incoming" | quote }}
         listLength: {{ .Values.keda.redis.listLength | default "30" | quote }}
     {{- else if eq .Values.keda.triggerType "redis-streams" }}
     # 2. Local Event-Driven Transaction Stream Trigger (Redis Streams)
     - type: redis-streams
       metadata:
-        address: {{ printf "%s-redis:6379" .Release.Name | quote }}
+        address: {{ printf "%s-redis.%s.svc.cluster.local:6379" .Release.Name .Release.Namespace | quote }}
         stream: {{ .Values.keda.redis.stream | default "transactions:stream" | quote }}
         consumerGroup: {{ .Values.keda.redis.consumerGroup | default "wallet-processors" | quote }}
         pendingEntriesCount: {{ .Values.keda.redis.pendingEntriesCount | default "30" | quote }}
